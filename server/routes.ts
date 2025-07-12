@@ -161,13 +161,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/jackpot", async (req, res) => {
     try {
       await initializeData();
-      const jackpotData = await storage.getLatestJackpotData();
       
-      if (!jackpotData) {
-        return res.status(404).json({ error: "No jackpot data available" });
+      // Disable caching for real-time data
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      
+      // Get current exchange rate (fresh data)
+      const exchangeRate = await CurrencyService.getEurToZarRate();
+      const currentJackpot = await EuroMillionsService.getCurrentJackpot();
+      
+      if (!currentJackpot || !exchangeRate) {
+        // Fallback to stored data if APIs are unavailable
+        const jackpotData = await storage.getLatestJackpotData();
+        if (!jackpotData) {
+          return res.status(404).json({ error: "No jackpot data available" });
+        }
+        return res.json(jackpotData);
       }
       
-      res.json(jackpotData);
+      // Calculate fresh ZAR amount with current exchange rate
+      const freshJackpotData = {
+        amountEur: currentJackpot,
+        amountZar: currentJackpot * exchangeRate.rate,
+        exchangeRate: exchangeRate.rate,
+        updatedAt: new Date()
+      };
+      
+      // Update stored data with fresh values
+      await storage.createJackpotData(freshJackpotData);
+      
+      res.json(freshJackpotData);
     } catch (error) {
       console.error('Error fetching jackpot:', error);
       res.status(500).json({ error: "Failed to fetch jackpot data" });
