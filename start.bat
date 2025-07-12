@@ -31,6 +31,7 @@ if not exist ".env" (
     pause
 )
 
-REM Start the application
+REM Set environment variable for Windows and start the application
 echo Starting development server...
-npm run dev
+set NODE_ENV=development
+npx tsx server/index.ts

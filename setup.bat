@@ -1,40 +1,39 @@
-
 @echo off
-echo EuroMillions App - Initial Setup
+echo EuroMillions App - Windows Setup
 echo ================================
 echo.
 
 REM Check if Node.js is installed
 node --version >nul 2>&1
 if errorlevel 1 (
-    echo Error: Node.js is not installed or not in PATH
+    echo Error: Node.js is not installed!
     echo Please install Node.js from https://nodejs.org/
     pause
     exit /b 1
 )
 
-echo Node.js version:
-node --version
-echo.
-
-REM Install dependencies
-echo Installing dependencies...
+echo Node.js found. Installing dependencies...
 npm install
+
 if errorlevel 1 (
     echo Error: Failed to install dependencies
     pause
     exit /b 1
 )
 
-REM Create .env file if it doesn't exist
+echo.
+echo Creating .env file from template...
 if not exist ".env" (
-    echo Creating .env file from template...
     copy ".env.example" ".env"
+    echo .env file created successfully!
     echo.
-    echo IMPORTANT: Please edit .env file and configure your DATABASE_URL
-    echo Example: DATABASE_URL=postgresql://username:password@localhost:5432/euromillions
-    echo.
+    echo IMPORTANT: Please edit .env file and update DATABASE_URL with your PostgreSQL credentials
+    echo Example: DATABASE_URL=postgresql://postgres:yourpassword@localhost:5432/euromillions
+) else (
+    echo .env file already exists, skipping...
 )
+
+echo.
 
 REM Check if user wants to setup database
 echo.
@@ -52,12 +51,6 @@ if /i "%setup_db%"=="y" (
 )
 
 echo.
-echo Setup complete! 
-echo.
-echo Next steps:
-echo 1. Make sure PostgreSQL is running
-echo 2. Edit .env file with your database credentials
-echo 3. Run 'npm run db:push' to setup database schema
-echo 4. Run 'start.bat' or 'npm run dev' to start the app
-echo.
+echo Setup complete! You can now run start.bat to launch the application.
+echo Don't forget to configure your database connection in the .env file.
 pause
