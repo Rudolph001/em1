@@ -1,0 +1,44 @@
+Build a full-stack EuroMillions analysis and prediction web app with the following features:
+
+✅ Core Functionality:
+- Display **all 139,838,160 EuroMillions number combinations** (5 numbers from 1–50 and 2 Lucky Stars from 1–12)
+- Show **which combinations have already been drawn** using historical data (last 1+ years, scraped from EuroMillions API or official website)
+- Identify and display **combinations that have never been played**
+- Check if a given combination has ever appeared in the draw history
+- Analyze all past draws and build a **machine learning model** that learns from patterns to predict the next number set
+- Give 1 **predicted combination per upcoming draw** with a stated 90% success target
+- Update the model every Tuesday and Friday (after results are published)
+- Self-learns from errors in prediction and adjusts future predictions
+
+📈 Jackpot and Currency Display:
+- Fetch the **current EuroMillions jackpot amount** (from a live data source)
+- Display the jackpot in **EUR and ZAR**
+- Fetch **EUR → ZAR exchange rate** in real-time using a reliable currency API
+- Automatically update these values every 2 minutes
+
+📊 Predictions:
+- Base prediction on statistical patterns like:
+    - Frequency of numbers over time
+    - Hot & cold number trends
+    - Gap analysis and number spread
+    - Machine learning classifiers (e.g., Random Forest or LSTM model trained on draw sequences)
+
+🔁 Automation:
+- Use scheduled background jobs (e.g., `cron` jobs or `setInterval`) to:
+    - Update jackpot and exchange rate every 2 minutes
+    - Pull draw results on Tuesdays and Fridays
+    - Retrain model after each draw
+
+💻 Tech Stack:
+- Frontend: React or Vite + TailwindCSS
+- Backend: Python (FastAPI or Flask) or Node.js
+- Data: SQLite or PostgreSQL to store draw history and combination flags
+- ML: scikit-learn or TensorFlow for prediction engine
+- APIs:
+    - EuroMillions results data (official or third-party)
+    - Currency exchange API (like exchangerate.host or OpenExchangeRates)
+
+Optional:
+- Add authentication to track user prediction history
+- Option to export remaining unplayed combinations
+- Dashboard with charts showing prediction accuracy over time
