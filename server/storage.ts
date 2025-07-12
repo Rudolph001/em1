@@ -21,7 +21,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   // Combination methods
   getCombinationByPosition(position: number): Promise<EuroMillionsCombination | undefined>;
   getCombinationByNumbers(mainNumbers: number[], luckyStars: number[]): Promise<EuroMillionsCombination | undefined>;
@@ -29,23 +29,23 @@ export interface IStorage {
   updateCombination(position: number, updates: Partial<EuroMillionsCombination>): Promise<EuroMillionsCombination | undefined>;
   getCombinationsRange(fromPosition: number, toPosition: number): Promise<EuroMillionsCombination[]>;
   getAllCombinations(): Promise<EuroMillionsCombination[]>;
-  
+
   // Draw history methods
   getDrawHistory(limit?: number): Promise<DrawHistory[]>;
   getDrawByDate(date: Date): Promise<DrawHistory | undefined>;
   createDrawHistory(draw: InsertDrawHistory): Promise<DrawHistory>;
   getLatestDraw(): Promise<DrawHistory | undefined>;
-  
+
   // Prediction methods
   getPredictions(limit?: number): Promise<Prediction[]>;
   createPrediction(prediction: InsertPrediction): Promise<Prediction>;
   updatePrediction(id: number, updates: Partial<Prediction>): Promise<Prediction | undefined>;
   getLatestPrediction(): Promise<Prediction | undefined>;
-  
+
   // Jackpot data methods
   getLatestJackpotData(): Promise<JackpotData | undefined>;
   createJackpotData(jackpot: InsertJackpotData): Promise<JackpotData>;
-  
+
   // Statistics methods
   getStats(): Promise<{
     totalCombinations: number;
@@ -123,7 +123,7 @@ export class MemStorage implements IStorage {
   async updateCombination(position: number, updates: Partial<EuroMillionsCombination>): Promise<EuroMillionsCombination | undefined> {
     const combination = await this.getCombinationByPosition(position);
     if (!combination) return undefined;
-    
+
     const updated = { ...combination, ...updates };
     this.combinations.set(combination.id, updated);
     return updated;
@@ -142,7 +142,7 @@ export class MemStorage implements IStorage {
   async getDrawHistory(limit?: number): Promise<DrawHistory[]> {
     const draws = Array.from(this.drawHistoryMap.values())
       .sort((a, b) => new Date(b.drawDate).getTime() - new Date(a.drawDate).getTime());
-    
+
     return limit ? draws.slice(0, limit) : draws;
   }
 
@@ -174,7 +174,7 @@ export class MemStorage implements IStorage {
   async getPredictions(limit?: number): Promise<Prediction[]> {
     const predictions = Array.from(this.predictionsMap.values())
       .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
-    
+
     return limit ? predictions.slice(0, limit) : predictions;
   }
 
@@ -195,7 +195,7 @@ export class MemStorage implements IStorage {
   async updatePrediction(id: number, updates: Partial<Prediction>): Promise<Prediction | undefined> {
     const prediction = this.predictionsMap.get(id);
     if (!prediction) return undefined;
-    
+
     const updated = { ...prediction, ...updates };
     this.predictionsMap.set(id, updated);
     return updated;
@@ -209,7 +209,7 @@ export class MemStorage implements IStorage {
   async getLatestJackpotData(): Promise<JackpotData | undefined> {
     const jackpots = Array.from(this.jackpotDataMap.values())
       .sort((a, b) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime());
-    
+
     return jackpots[0];
   }
 
@@ -234,12 +234,12 @@ export class MemStorage implements IStorage {
     const drawnCombinations = Array.from(this.combinations.values())
       .filter(combo => combo.hasBeenDrawn).length;
     const neverDrawnCombinations = totalCombinations - drawnCombinations;
-    
+
     const predictions = Array.from(this.predictionsMap.values())
       .filter(pred => pred.wasCorrect !== null);
     const correctPredictions = predictions.filter(pred => pred.wasCorrect).length;
     const predictionAccuracy = predictions.length > 0 ? (correctPredictions / predictions.length) * 100 : 0;
-    
+
     return {
       totalCombinations,
       drawnCombinations,

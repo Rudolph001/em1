@@ -17,37 +17,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('Initializing EuroMillions data...');
       
+      // Check if we already have data to avoid duplicates
+      const existingHistory = await storage.getDrawHistory(1);
+      if (existingHistory.length > 0) {
+        console.log('Data already exists, skipping initialization');
+        dataInitialized = true;
+        return;
+      }
+      
       // Fetch recent historical draws (2024-2025)
       const historicalDraws = await EuroMillionsService.getHistoricalDraws(50);
       
+      // Remove duplicates based on date and numbers
+      const uniqueDraws = historicalDraws.filter((draw, index, self) => 
+        index === self.findIndex(d => 
+          d.date === draw.date && 
+          JSON.stringify(d.numbers) === JSON.stringify(draw.numbers) &&
+          JSON.stringify(d.stars) === JSON.stringify(draw.stars)
+        )
+      );
+      
+      console.log(`Processing ${uniqueDraws.length} unique draws`);
+      
       let previousPosition = 0;
-      for (const draw of historicalDraws) {
+      for (const draw of uniqueDraws) {
         // Store draw history with original order as drawn
         const sortedNumbers = [...draw.numbers].sort((a, b) => a - b);
         const sortedStars = [...draw.stars].sort((a, b) => a - b);
         const position = CombinationsService.calculatePosition(sortedNumbers, sortedStars);
         const gapFromPrevious = previousPosition > 0 ? position - previousPosition : 0;
         
-        await storage.createDrawHistory({
-          drawDate: new Date(draw.date),
-          mainNumbers: draw.numbers, // Keep original order as drawn
-          luckyStars: draw.stars, // Keep original order as drawn
-          position,
-          jackpotEur: draw.jackpot || 0,
-          jackpotZar: draw.jackpot ? await CurrencyService.convertEurToZar(draw.jackpot) || 0 : 0,
-          gapFromPrevious
-        });
-        
-        // Mark combination as drawn (using sorted numbers for consistency)
-        await storage.createCombination({
-          position,
-          mainNumbers: sortedNumbers,
-          luckyStars: sortedStars,
-          hasBeenDrawn: true,
-          lastDrawnDate: new Date(draw.date)
-        });
-        
-        previousPosition = position;
+        try {
+          await storage.createDrawHistory({
+            drawDate: new Date(draw.date),
+            mainNumbers: draw.numbers, // Keep original order as drawn
+            luckyStars: draw.stars, // Keep original order as drawn
+            position,
+            jackpotEur: draw.jackpot || 0,
+            jackpotZar: draw.jackpot ? await CurrencyService.convertEurToZar(draw.jackpot) || 0 : 0,
+            gapFromPrevious
+          });
+          
+          // Mark combination as drawn (using sorted numbers for consistency)
+          await storage.createCombination({
+            position,
+            mainNumbers: sortedNumbers,
+            luckyStars: sortedStars,
+            hasBeenDrawn: true,
+            lastDrawnDate: new Date(draw.date)
+          });
+          
+          previousPosition = position;
+        } catch (error) {
+          console.error('Error storing draw:', draw.date, error);
+        }
       }
       
       // Generate initial prediction
@@ -344,9 +367,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Clear data and force refresh (for testing)
   app.post("/api/clear-data", async (req, res) => {
     try {
+      // Clear existing data
+      await storage.clearAllData();
+      
       // Reset the initialization flag to force fresh data
       dataInitialized = false;
-      res.json({ message: 'Data cleared, next request will fetch fresh data' });
+      
+      // Reinitialize with fresh data
+      await initializeData();
+      
+      res.json({ message: 'Data cleared and reinitialized successfully' });
     } catch (error) {
       console.error('Error clearing data:', error);
       res.status(500).json({ error: 'Failed to clear data' });
