@@ -59,26 +59,218 @@ export class PredictionService {
   }
   
   /**
-   * Predict next position based on gap analysis
+   * Predict next position based on advanced gap analysis and pattern recognition
    */
   private static predictNextPosition(positions: number[], gapAnalysis: any): number {
     if (positions.length === 0) {
       return Math.floor(Math.random() * 139838160) + 1;
     }
     
-    const lastPosition = Math.max(...positions);
-    const averageGap = gapAnalysis.averageGap;
+    // Sort positions chronologically (most recent first)
+    const sortedPositions = [...positions].sort((a, b) => b - a);
+    const recentPositions = sortedPositions.slice(0, Math.min(20, positions.length));
     
-    // Apply some randomness based on gap variance
-    const variance = gapAnalysis.largestGap - gapAnalysis.smallestGap;
-    const randomFactor = (Math.random() - 0.5) * (variance * 0.1);
+    // Multiple prediction methods
+    const predictions = [
+      this.predictByMovingAverage(recentPositions),
+      this.predictByWeightedGaps(recentPositions, gapAnalysis),
+      this.predictByCyclicalPattern(recentPositions),
+      this.predictByTrendAnalysis(recentPositions),
+      this.predictByDistribution(positions)
+    ];
     
-    let predictedPosition = lastPosition + averageGap + randomFactor;
+    // Filter out invalid predictions
+    const validPredictions = predictions.filter(p => p >= 1 && p <= 139838160);
     
-    // Ensure position is within valid range
-    predictedPosition = Math.max(1, Math.min(139838160, Math.floor(predictedPosition)));
+    if (validPredictions.length === 0) {
+      return Math.floor(Math.random() * 139838160) + 1;
+    }
     
-    return predictedPosition;
+    // Use ensemble method - weighted average of predictions
+    const weights = [0.3, 0.25, 0.2, 0.15, 0.1]; // Weights for each method
+    let weightedSum = 0;
+    let totalWeight = 0;
+    
+    for (let i = 0; i < Math.min(validPredictions.length, weights.length); i++) {
+      weightedSum += validPredictions[i] * weights[i];
+      totalWeight += weights[i];
+    }
+    
+    let finalPrediction = Math.floor(weightedSum / totalWeight);
+    
+    // Apply final variance adjustment
+    const stdDev = Math.sqrt(gapAnalysis.averageGap * 0.15);
+    const adjustment = this.gaussianRandom() * stdDev;
+    finalPrediction = Math.floor(finalPrediction + adjustment);
+    
+    // Ensure within bounds
+    return Math.max(1, Math.min(139838160, finalPrediction));
+  }
+  
+  /**
+   * Predict using exponential moving average
+   */
+  private static predictByMovingAverage(positions: number[]): number {
+    if (positions.length < 2) return positions[0] || 0;
+    
+    const alpha = 0.3; // Smoothing factor
+    let ema = positions[positions.length - 1];
+    
+    for (let i = positions.length - 2; i >= 0; i--) {
+      ema = alpha * positions[i] + (1 - alpha) * ema;
+    }
+    
+    // Predict next based on trend
+    const trend = positions[0] - positions[positions.length - 1];
+    return Math.floor(ema + (trend * 0.1));
+  }
+  
+  /**
+   * Predict using weighted gap analysis with time decay
+   */
+  private static predictByWeightedGaps(positions: number[], gapAnalysis: any): number {
+    if (positions.length < 2) return positions[0] || 0;
+    
+    const gaps = [];
+    const weights = [];
+    
+    // Calculate gaps with time-based weights (recent gaps have more weight)
+    for (let i = 0; i < positions.length - 1; i++) {
+      const gap = Math.abs(positions[i] - positions[i + 1]);
+      gaps.push(gap);
+      weights.push(Math.exp(-i * 0.1)); // Exponential decay
+    }
+    
+    // Weighted average gap
+    let weightedGap = 0;
+    let totalWeight = 0;
+    
+    for (let i = 0; i < gaps.length; i++) {
+      weightedGap += gaps[i] * weights[i];
+      totalWeight += weights[i];
+    }
+    
+    const avgWeightedGap = weightedGap / totalWeight;
+    const lastPosition = positions[0];
+    
+    // Direction prediction based on recent trend
+    const recentTrend = positions.length > 3 ? 
+      (positions[0] - positions[2]) / 2 : 
+      (positions[0] - positions[positions.length - 1]);
+    
+    const direction = recentTrend > 0 ? 1 : -1;
+    
+    return Math.floor(lastPosition + (avgWeightedGap * direction * 0.8));
+  }
+  
+  /**
+   * Predict using cyclical pattern detection
+   */
+  private static predictByCyclicalPattern(positions: number[]): number {
+    if (positions.length < 4) return positions[0] || 0;
+    
+    // Look for cyclical patterns in position sequences
+    const cycles = [3, 4, 5, 7]; // Different cycle lengths to test
+    let bestCycle = 3;
+    let bestScore = 0;
+    
+    for (const cycle of cycles) {
+      if (positions.length < cycle * 2) continue;
+      
+      let score = 0;
+      for (let i = 0; i < Math.min(cycle, positions.length - cycle); i++) {
+        const diff1 = Math.abs(positions[i] - positions[i + cycle]);
+        const diff2 = positions.length > i + cycle * 2 ? 
+          Math.abs(positions[i + cycle] - positions[i + cycle * 2]) : diff1;
+        
+        // Score based on similarity of gaps
+        const similarity = 1 - (Math.abs(diff1 - diff2) / Math.max(diff1, diff2, 1));
+        score += similarity;
+      }
+      
+      if (score > bestScore) {
+        bestScore = score;
+        bestCycle = cycle;
+      }
+    }
+    
+    // Predict based on best cycle
+    if (bestScore > 0.3 && positions.length > bestCycle) {
+      const cyclicalGap = positions[0] - positions[bestCycle];
+      return Math.floor(positions[0] + cyclicalGap);
+    }
+    
+    return positions[0];
+  }
+  
+  /**
+   * Predict using linear trend analysis
+   */
+  private static predictByTrendAnalysis(positions: number[]): number {
+    if (positions.length < 3) return positions[0] || 0;
+    
+    // Linear regression on recent positions
+    const n = Math.min(10, positions.length);
+    const recentPos = positions.slice(0, n);
+    
+    let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+    
+    for (let i = 0; i < n; i++) {
+      const x = i;
+      const y = recentPos[i];
+      sumX += x;
+      sumY += y;
+      sumXY += x * y;
+      sumXX += x * x;
+    }
+    
+    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+    const intercept = (sumY - slope * sumX) / n;
+    
+    // Predict next position
+    return Math.floor(slope * n + intercept);
+  }
+  
+  /**
+   * Predict using position distribution analysis
+   */
+  private static predictByDistribution(positions: number[]): number {
+    if (positions.length < 5) return positions[0] || 0;
+    
+    // Divide position space into segments and analyze distribution
+    const segments = 20;
+    const segmentSize = Math.floor(139838160 / segments);
+    const distribution = new Array(segments).fill(0);
+    
+    // Count positions in each segment
+    for (const pos of positions) {
+      const segment = Math.min(segments - 1, Math.floor(pos / segmentSize));
+      distribution[segment]++;
+    }
+    
+    // Find least populated segments (cold zones)
+    const coldSegments = distribution
+      .map((count, index) => ({ count, index }))
+      .sort((a, b) => a.count - b.count)
+      .slice(0, 5);
+    
+    // Randomly select from cold segments
+    const selectedSegment = coldSegments[Math.floor(Math.random() * coldSegments.length)];
+    const segmentStart = selectedSegment.index * segmentSize;
+    
+    return Math.floor(segmentStart + Math.random() * segmentSize);
+  }
+  
+  /**
+   * Generate Gaussian (normal) random number using Box-Muller transform
+   */
+  private static gaussianRandom(): number {
+    let u = 0, v = 0;
+    while (u === 0) u = Math.random(); // Converting [0,1) to (0,1)
+    while (v === 0) v = Math.random();
+    
+    const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+    return z;
   }
   
   /**
