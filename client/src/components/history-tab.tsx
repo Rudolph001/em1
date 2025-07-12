@@ -11,6 +11,11 @@ export function HistoryTab() {
     refetchInterval: 10 * 60 * 1000, // Refresh every 10 minutes
   });
 
+  const { data: dateRange } = useQuery({
+    queryKey: ['/api/history/date-range'],
+    refetchInterval: 30 * 60 * 1000, // Refresh every 30 minutes
+  });
+
   const formatCurrency = (amount: number) => {
     return `€${amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   };
@@ -23,6 +28,27 @@ export function HistoryTab() {
     }
     return '0';
   };
+
+  // Format date range from API data
+  const formatDateRange = () => {
+    if (!dateRange || !dateRange.earliest || !dateRange.latest) return null;
+    
+    return {
+      earliest: new Date(dateRange.earliest).toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      }),
+      latest: new Date(dateRange.latest).toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      }),
+      totalDraws: dateRange.totalDraws
+    };
+  };
+
+  const formattedDateRange = formatDateRange();
 
   return (
     <div className="space-y-6">
@@ -40,6 +66,34 @@ export function HistoryTab() {
           {isLoading ? 'Refreshing...' : 'Refresh'}
         </Button>
       </div>
+
+      {formattedDateRange && (
+        <Card className="mb-4">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center space-x-2">
+                <i className="fas fa-calendar-alt text-blue-600"></i>
+                <span className="font-medium text-gray-700">Historical Data Range:</span>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="text-right">
+                  <div className="text-xs text-gray-500">Earliest</div>
+                  <div className="font-semibold text-gray-900">{formattedDateRange.earliest}</div>
+                </div>
+                <div className="text-gray-400">→</div>
+                <div className="text-right">
+                  <div className="text-xs text-gray-500">Latest</div>
+                  <div className="font-semibold text-gray-900">{formattedDateRange.latest}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs text-gray-500">Total Draws</div>
+                  <div className="font-semibold text-blue-600">{formattedDateRange.totalDraws}</div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

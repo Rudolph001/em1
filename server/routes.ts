@@ -307,6 +307,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to fetch draw history" });
     }
   });
+
+  // Get historical data date range
+  app.get("/api/history/date-range", async (req, res) => {
+    try {
+      await initializeData();
+      const allHistory = await storage.getDrawHistory(); // Get all records
+      
+      if (allHistory.length === 0) {
+        return res.json({ earliest: null, latest: null, totalDraws: 0 });
+      }
+      
+      const dates = allHistory.map(draw => new Date(draw.drawDate));
+      const earliest = new Date(Math.min(...dates.map(d => d.getTime())));
+      const latest = new Date(Math.max(...dates.map(d => d.getTime())));
+      
+      res.json({
+        earliest: earliest.toISOString(),
+        latest: latest.toISOString(),
+        totalDraws: allHistory.length
+      });
+    } catch (error) {
+      console.error('Error fetching date range:', error);
+      res.status(500).json({ error: "Failed to fetch date range" });
+    }
+  });
   
   // Get current prediction
   app.get("/api/prediction", async (req, res) => {
