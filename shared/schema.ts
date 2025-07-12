@@ -36,6 +36,8 @@ export const predictions = pgTable("predictions", {
   position: integer("position").notNull(),
   confidence: real("confidence").notNull(),
   modelVersion: text("model_version").notNull(),
+  reasoning: text("reasoning"),
+  historicalDataPoints: integer("historical_data_points"),
   wasCorrect: boolean("was_correct"),
   createdAt: timestamp("created_at").defaultNow(),
 });

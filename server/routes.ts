@@ -133,7 +133,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         luckyStars: prediction.luckyStars,
         position: prediction.position,
         confidence: prediction.confidence,
-        modelVersion: prediction.modelVersion
+        modelVersion: prediction.modelVersion,
+        reasoning: prediction.reasoning,
+        historicalDataPoints: prediction.historicalDataPoints
       });
       
       // Initialize jackpot data
@@ -287,10 +289,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/prediction", async (req, res) => {
     try {
       await initializeData();
-      const prediction = await storage.getLatestPrediction();
+      let prediction = await storage.getLatestPrediction();
       
-      if (!prediction) {
-        return res.status(404).json({ error: "No prediction available" });
+      // If no prediction exists or it's missing new fields, generate a new one
+      if (!prediction || !prediction.reasoning || !prediction.historicalDataPoints) {
+        const history = await storage.getDrawHistory();
+        const positions = history.map(draw => draw.position);
+        const newPrediction = await PredictionService.generatePrediction(positions);
+        
+        prediction = await storage.createPrediction({
+          drawDate: EuroMillionsService.getNextDrawDate(),
+          mainNumbers: newPrediction.mainNumbers,
+          luckyStars: newPrediction.luckyStars,
+          position: newPrediction.position,
+          confidence: newPrediction.confidence,
+          modelVersion: newPrediction.modelVersion,
+          reasoning: newPrediction.reasoning,
+          historicalDataPoints: newPrediction.historicalDataPoints
+        });
       }
       
       res.json(prediction);

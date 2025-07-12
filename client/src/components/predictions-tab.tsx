@@ -91,6 +91,22 @@ export function PredictionsTab() {
                   <p className="opacity-75">
                     Model: {prediction.modelVersion}
                   </p>
+                  <p className="opacity-75">
+                    Based on {prediction.historicalDataPoints || 0} historical draws
+                  </p>
+                </div>
+                
+                {/* Prediction Reasoning */}
+                <div className="mt-4 p-3 bg-white bg-opacity-10 rounded-lg">
+                  <div className="flex items-start">
+                    <i className="fas fa-lightbulb text-yellow-300 mr-2 mt-1 text-sm"></i>
+                    <div>
+                      <p className="text-xs font-medium opacity-90 mb-1">Why These Numbers?</p>
+                      <p className="text-xs opacity-80 leading-relaxed">
+                        {prediction.reasoning || 'Analysis based on historical patterns and gap analysis.'}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -118,6 +134,12 @@ export function PredictionsTab() {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Prediction Method</span>
                 <span className="text-sm font-medium text-gray-900">Gap Analysis</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Historical Data Points</span>
+                <span className="text-sm font-medium text-gray-900">
+                  {prediction?.historicalDataPoints || 0} draws
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Confidence Level</span>

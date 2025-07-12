@@ -7,6 +7,8 @@ export interface PredictionResult {
   confidence: number;
   method: string;
   modelVersion: string;
+  reasoning: string;
+  historicalDataPoints: number;
 }
 
 export class PredictionService {
@@ -31,13 +33,18 @@ export class PredictionService {
     // Calculate confidence based on historical accuracy and gap patterns
     const confidence = this.calculateConfidence(gapAnalysis, historicalPositions);
     
+    // Generate reasoning explanation
+    const reasoning = this.generateReasoning(historicalPositions, gapAnalysis, combination);
+    
     return {
       mainNumbers: combination.mainNumbers,
       luckyStars: combination.luckyStars,
       position: predictedPosition,
       confidence,
       method: 'Gap Analysis + Pattern Recognition',
-      modelVersion: this.MODEL_VERSION
+      modelVersion: this.MODEL_VERSION,
+      reasoning,
+      historicalDataPoints: historicalPositions.length
     };
   }
   
@@ -339,7 +346,9 @@ export class PredictionService {
       position,
       confidence: 0.641,
       method: 'Statistical Frequency Analysis',
-      modelVersion: this.MODEL_VERSION
+      modelVersion: this.MODEL_VERSION,
+      reasoning: `Selected based on frequency analysis of ${positions.length} historical draws. Hot numbers appear more frequently in recent draws.`,
+      historicalDataPoints: positions.length
     };
   }
   
@@ -362,8 +371,59 @@ export class PredictionService {
       position,
       confidence: 0.587,
       method: 'Pattern Recognition',
-      modelVersion: this.MODEL_VERSION
+      modelVersion: this.MODEL_VERSION,
+      reasoning: `Selected using pattern recognition from ${positions.length} historical draws. Numbers follow arithmetic sequences and common lottery patterns.`,
+      historicalDataPoints: positions.length
     };
+  }
+  
+  /**
+   * Generate reasoning explanation for prediction
+   */
+  private static generateReasoning(historicalPositions: number[], gapAnalysis: any, combination: any): string {
+    const dataPoints = historicalPositions.length;
+    const avgGap = gapAnalysis.averageGap;
+    const recentGaps = historicalPositions.slice(0, 5);
+    
+    // Analyze the combination's characteristics
+    const mainNumbers = combination.mainNumbers;
+    const luckyStars = combination.luckyStars;
+    
+    // Calculate number spread
+    const mainSpread = mainNumbers[4] - mainNumbers[0];
+    const hasConsecutive = mainNumbers.some((num, i) => i > 0 && num === mainNumbers[i-1] + 1);
+    
+    // Build reasoning based on analysis
+    let reasoning = `Based on analysis of ${dataPoints} historical draws, `;
+    
+    if (avgGap > 5000000) {
+      reasoning += `the average gap between draws is ${(avgGap / 1000000).toFixed(1)}M positions, suggesting wider position jumps are likely. `;
+    } else {
+      reasoning += `the average gap between draws is ${(avgGap / 1000).toFixed(0)}K positions, indicating moderate position changes. `;
+    }
+    
+    // Add gap pattern analysis
+    if (recentGaps.length >= 2) {
+      const recentTrend = recentGaps[0] > recentGaps[1] ? 'increasing' : 'decreasing';
+      reasoning += `Recent gap pattern shows ${recentTrend} trends. `;
+    }
+    
+    // Add combination characteristics
+    if (hasConsecutive) {
+      reasoning += `Selected numbers include consecutive pairs, following common lottery patterns. `;
+    }
+    
+    if (mainSpread > 35) {
+      reasoning += `Numbers are well-distributed across the range (spread: ${mainSpread}), balancing risk. `;
+    } else {
+      reasoning += `Numbers are clustered (spread: ${mainSpread}), focusing on a specific range. `;
+    }
+    
+    // Add lucky star analysis
+    const starSpread = luckyStars[1] - luckyStars[0];
+    reasoning += `Lucky stars ${luckyStars[0]}-${luckyStars[1]} (spread: ${starSpread}) complement the main number selection.`;
+    
+    return reasoning;
   }
   
   /**
