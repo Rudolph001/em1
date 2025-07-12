@@ -22,24 +22,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       let previousPosition = 0;
       for (const draw of historicalDraws) {
-        const position = CombinationsService.calculatePosition(draw.numbers, draw.stars);
+        // Store draw history with original order as drawn
+        const sortedNumbers = [...draw.numbers].sort((a, b) => a - b);
+        const sortedStars = [...draw.stars].sort((a, b) => a - b);
+        const position = CombinationsService.calculatePosition(sortedNumbers, sortedStars);
         const gapFromPrevious = previousPosition > 0 ? position - previousPosition : 0;
         
         await storage.createDrawHistory({
           drawDate: new Date(draw.date),
-          mainNumbers: draw.numbers,
-          luckyStars: draw.stars,
+          mainNumbers: draw.numbers, // Keep original order as drawn
+          luckyStars: draw.stars, // Keep original order as drawn
           position,
           jackpotEur: draw.jackpot || 0,
           jackpotZar: draw.jackpot ? await CurrencyService.convertEurToZar(draw.jackpot) || 0 : 0,
           gapFromPrevious
         });
         
-        // Mark combination as drawn
+        // Mark combination as drawn (using sorted numbers for consistency)
         await storage.createCombination({
           position,
-          mainNumbers: draw.numbers,
-          luckyStars: draw.stars,
+          mainNumbers: sortedNumbers,
+          luckyStars: sortedStars,
           hasBeenDrawn: true,
           lastDrawnDate: new Date(draw.date)
         });

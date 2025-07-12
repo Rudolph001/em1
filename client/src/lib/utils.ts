@@ -11,16 +11,7 @@ export function formatNumber(num: number): string {
 
 export function formatCurrency(amount: number, currency: 'EUR' | 'ZAR'): string {
   const symbol = currency === 'EUR' ? '€' : 'R';
-  
-  if (amount >= 1000000000) {
-    return `${symbol}${(amount / 1000000000).toFixed(1)}B`;
-  } else if (amount >= 1000000) {
-    return `${symbol}${(amount / 1000000).toFixed(1)}M`;
-  } else if (amount >= 1000) {
-    return `${symbol}${(amount / 1000).toFixed(1)}K`;
-  } else {
-    return `${symbol}${amount.toFixed(2)}`;
-  }
+  return `${symbol}${amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
 export function calculateTimeDifference(targetDate: Date): {

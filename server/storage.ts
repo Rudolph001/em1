@@ -111,8 +111,10 @@ export class MemStorage implements IStorage {
     const combination: EuroMillionsCombination = { 
       ...insertCombination, 
       id,
-      hasBeenDrawn: false,
-      lastDrawnDate: null
+      mainNumbers: [...insertCombination.mainNumbers],
+      luckyStars: [...insertCombination.luckyStars],
+      hasBeenDrawn: insertCombination.hasBeenDrawn || false,
+      lastDrawnDate: insertCombination.lastDrawnDate || null
     };
     this.combinations.set(id, combination);
     return combination;
@@ -151,7 +153,15 @@ export class MemStorage implements IStorage {
 
   async createDrawHistory(insertDraw: InsertDrawHistory): Promise<DrawHistory> {
     const id = this.currentDrawId++;
-    const draw: DrawHistory = { ...insertDraw, id };
+    const draw: DrawHistory = { 
+      ...insertDraw, 
+      id,
+      mainNumbers: [...insertDraw.mainNumbers],
+      luckyStars: [...insertDraw.luckyStars],
+      jackpotEur: insertDraw.jackpotEur || null,
+      jackpotZar: insertDraw.jackpotZar || null,
+      gapFromPrevious: insertDraw.gapFromPrevious || null
+    };
     this.drawHistoryMap.set(id, draw);
     return draw;
   }
@@ -173,6 +183,8 @@ export class MemStorage implements IStorage {
     const prediction: Prediction = { 
       ...insertPrediction, 
       id,
+      mainNumbers: [...insertPrediction.mainNumbers],
+      luckyStars: [...insertPrediction.luckyStars],
       wasCorrect: null,
       createdAt: new Date()
     };

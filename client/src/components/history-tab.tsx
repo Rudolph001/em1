@@ -8,18 +8,11 @@ import { CombinationDisplay } from "@/components/combination-display";
 export function HistoryTab() {
   const { data: history, isLoading, refetch } = useQuery({
     queryKey: ['/api/history'],
-    queryFn: () => fetch('/api/history?limit=20').then(res => res.json()),
     refetchInterval: 10 * 60 * 1000, // Refresh every 10 minutes
   });
 
   const formatCurrency = (amount: number) => {
-    if (amount >= 1000000) {
-      return `€${(amount / 1000000).toFixed(1)}M`;
-    } else if (amount >= 1000) {
-      return `€${(amount / 1000).toFixed(1)}K`;
-    } else {
-      return `€${amount.toFixed(0)}`;
-    }
+    return `€${amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   };
 
   const formatGap = (gap: number) => {
@@ -35,9 +28,16 @@ export function HistoryTab() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">Recent Draw History</h3>
-        <Button onClick={() => refetch()} variant="outline" size="sm">
-          <i className="fas fa-sync-alt mr-2"></i>
-          Refresh
+        <Button 
+          onClick={() => {
+            refetch();
+          }} 
+          variant="outline" 
+          size="sm"
+          disabled={isLoading}
+        >
+          <i className={`fas fa-sync-alt mr-2 ${isLoading ? 'animate-spin' : ''}`}></i>
+          {isLoading ? 'Refreshing...' : 'Refresh'}
         </Button>
       </div>
 

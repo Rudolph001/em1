@@ -23,8 +23,8 @@ export class EuroMillionsService {
       
       return {
         date: data.date,
-        numbers: data.numbers.sort((a: number, b: number) => a - b),
-        stars: data.stars.sort((a: number, b: number) => a - b),
+        numbers: data.numbers, // Keep original order as drawn
+        stars: data.stars, // Keep original order as drawn
         jackpot: data.jackpot
       };
     } catch (error) {
@@ -48,8 +48,8 @@ export class EuroMillionsService {
       
       return data.map((draw: any) => ({
         date: draw.date,
-        numbers: draw.numbers.sort((a: number, b: number) => a - b),
-        stars: draw.stars.sort((a: number, b: number) => a - b),
+        numbers: draw.numbers, // Keep original order as drawn
+        stars: draw.stars, // Keep original order as drawn
         jackpot: draw.jackpot
       }));
     } catch (error) {
@@ -73,8 +73,8 @@ export class EuroMillionsService {
       
       return data.map((draw: any) => ({
         date: draw.date,
-        numbers: draw.numbers.sort((a: number, b: number) => a - b),
-        stars: draw.stars.sort((a: number, b: number) => a - b),
+        numbers: draw.numbers, // Keep original order as drawn
+        stars: draw.stars, // Keep original order as drawn
         jackpot: draw.jackpot
       }));
     } catch (error) {

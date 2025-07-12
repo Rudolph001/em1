@@ -10,13 +10,7 @@ export function Header() {
 
   const formatCurrency = (amount: number, currency: 'EUR' | 'ZAR') => {
     const symbol = currency === 'EUR' ? '€' : 'R';
-    if (amount >= 1000000) {
-      return `${symbol}${(amount / 1000000).toFixed(1)}M`;
-    } else if (amount >= 1000) {
-      return `${symbol}${(amount / 1000).toFixed(1)}K`;
-    } else {
-      return `${symbol}${amount.toFixed(2)}`;
-    }
+    return `${symbol}${amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   };
 
   return (
@@ -33,14 +27,14 @@ export function Header() {
             <div className="text-center">
               <div className="text-xs text-gray-500">Current Jackpot</div>
               {jackpotLoading ? (
-                <Skeleton className="h-6 w-16 mb-1" />
+                <Skeleton className="h-6 w-24 mb-1" />
               ) : (
                 <div className="font-bold text-lg text-primary">
                   {jackpot ? formatCurrency(jackpot.amountEur, 'EUR') : '€0'}
                 </div>
               )}
               {jackpotLoading ? (
-                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-28" />
               ) : (
                 <div className="text-sm text-gray-600">
                   {jackpot ? formatCurrency(jackpot.amountZar, 'ZAR') : 'R0'}

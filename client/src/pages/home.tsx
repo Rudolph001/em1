@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Header } from "@/components/header";
+import { LatestDraw } from "@/components/latest-draw";
 import { StatsOverview } from "@/components/stats-overview";
 import { SearchTab } from "@/components/search-tab";
 import { PredictionsTab } from "@/components/predictions-tab";
@@ -15,6 +16,7 @@ export default function Home() {
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <LatestDraw />
         <StatsOverview />
         
         <div className="bg-white rounded-lg shadow-lg mt-8">
