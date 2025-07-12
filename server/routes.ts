@@ -122,11 +122,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Generate initial prediction
-      const positions = historicalDraws.map(draw => 
+      const predictionPositions = historicalDraws.map(draw => 
         CombinationsService.calculatePosition(draw.numbers, draw.stars)
       );
       
-      const prediction = await PredictionService.generatePrediction(positions);
+      const prediction = await PredictionService.generatePrediction(predictionPositions);
       await storage.createPrediction({
         drawDate: EuroMillionsService.getNextDrawDate(),
         mainNumbers: prediction.mainNumbers,
