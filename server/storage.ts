@@ -247,6 +247,19 @@ export class MemStorage implements IStorage {
       predictionAccuracy
     };
   }
+
+  async clearAllData(): Promise<void> {
+    this.users.clear();
+    this.combinations.clear();
+    this.drawHistoryMap.clear();
+    this.predictionsMap.clear();
+    this.jackpotDataMap.clear();
+    this.currentUserId = 1;
+    this.currentCombinationId = 1;
+    this.currentDrawId = 1;
+    this.currentPredictionId = 1;
+    this.currentJackpotId = 1;
+  }
 }
 
 export const storage = new MemStorage();

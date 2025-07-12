@@ -25,8 +25,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return;
       }
       
-      // Fetch recent historical draws (2024-2025)
-      const historicalDraws = await EuroMillionsService.getHistoricalDraws(50);
+      // Fetch recent historical draws from real CSV data
+      let historicalDraws;
+      try {
+        historicalDraws = await EuroMillionsService.getHistoricalDraws(50);
+      } catch (error) {
+        console.error('Failed to fetch historical draws:', error);
+        throw new Error('Unable to initialize with real draw data');
+      }
       
       // Remove duplicates based on date and numbers
       const uniqueDraws = historicalDraws.filter((draw, index, self) => 
@@ -37,7 +43,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         )
       );
       
-      console.log(`Processing ${uniqueDraws.length} unique draws`);
+      console.log(`Processing ${uniqueDraws.length} unique draws from real CSV data`);
       
       let previousPosition = 0;
       for (const draw of uniqueDraws) {
