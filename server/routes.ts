@@ -17,8 +17,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('Initializing EuroMillions data...');
       
-      // Fetch historical draws
-      const historicalDraws = await EuroMillionsService.getHistoricalDraws(100);
+      // Fetch recent historical draws (2024-2025)
+      const historicalDraws = await EuroMillionsService.getHistoricalDraws(50);
       
       let previousPosition = 0;
       for (const draw of historicalDraws) {
@@ -322,6 +322,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get draw history
+  app.get('/api/history', async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 20;
+      let history = await storage.getDrawHistory(limit);
+      
+      if (history.length === 0) {
+        console.log('No history found, initializing with fresh data...');
+        await initializeData();
+        history = await storage.getDrawHistory(limit);
+      }
+      
+      res.json(history);
+    } catch (error) {
+      console.error('Error fetching history:', error);
+      res.status(500).json({ error: 'Failed to fetch history' });
+    }
+  });
+
+  // Clear data and force refresh (for testing)
+  app.post("/api/clear-data", async (req, res) => {
+    try {
+      // Reset the initialization flag to force fresh data
+      dataInitialized = false;
+      res.json({ message: 'Data cleared, next request will fetch fresh data' });
+    } catch (error) {
+      console.error('Error clearing data:', error);
+      res.status(500).json({ error: 'Failed to clear data' });
+    }
+  });
+
   // Update data (manual trigger)
   app.post("/api/update", async (req, res) => {
     try {
