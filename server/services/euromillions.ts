@@ -145,6 +145,36 @@ export class EuroMillionsService {
   }
   
   /**
+   * Fetch all historical draws from January 2024 to present
+   */
+  static async getExtendedHistoricalDraws(): Promise<EuroMillionsDrawResult[]> {
+    try {
+      await this.addRequestDelay();
+      
+      const response = await fetch(this.CSV_URL);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch CSV: ${response.status}`);
+      }
+      
+      const csvText = await response.text();
+      const allDraws = this.parseCSVData(csvText);
+      
+      // Filter draws from January 2024 onwards
+      const startDate = new Date('2024-01-01');
+      const filteredDraws = allDraws.filter(draw => {
+        const drawDate = new Date(draw.date);
+        return drawDate >= startDate;
+      });
+      
+      console.log(`Fetched ${filteredDraws.length} draws from January 2024 onwards`);
+      return filteredDraws;
+    } catch (error) {
+      console.error('Error fetching extended historical draws:', error);
+      return [];
+    }
+  }
+
+  /**
    * Fetch historical EuroMillions draws from National Lottery CSV
    */
   static async getHistoricalDraws(limit: number = 50): Promise<EuroMillionsDrawResult[]> {

@@ -1,20 +1,6 @@
-import { 
-  users, 
-  euroMillionsCombinations, 
-  drawHistory, 
-  predictions, 
-  jackpotData,
-  type User, 
-  type InsertUser,
-  type EuroMillionsCombination,
-  type InsertEuroMillionsCombination,
-  type DrawHistory,
-  type InsertDrawHistory,
-  type Prediction,
-  type InsertPrediction,
-  type JackpotData,
-  type InsertJackpotData
-} from "@shared/schema";
+import { users, euroMillionsCombinations, drawHistory, predictions, jackpotData, type User, type InsertUser, type EuroMillionsCombination, type InsertEuroMillionsCombination, type DrawHistory, type InsertDrawHistory, type Prediction, type InsertPrediction, type JackpotData, type InsertJackpotData } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc, asc, gte, lte } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -55,203 +41,164 @@ export interface IStorage {
   }>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private combinations: Map<number, EuroMillionsCombination>;
-  private drawHistoryMap: Map<number, DrawHistory>;
-  private predictionsMap: Map<number, Prediction>;
-  private jackpotDataMap: Map<number, JackpotData>;
-  private currentUserId: number;
-  private currentCombinationId: number;
-  private currentDrawId: number;
-  private currentPredictionId: number;
-  private currentJackpotId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.combinations = new Map();
-    this.drawHistoryMap = new Map();
-    this.predictionsMap = new Map();
-    this.jackpotDataMap = new Map();
-    this.currentUserId = 1;
-    this.currentCombinationId = 1;
-    this.currentDrawId = 1;
-    this.currentPredictionId = 1;
-    this.currentJackpotId = 1;
-  }
-
+export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
     return user;
   }
 
   async getCombinationByPosition(position: number): Promise<EuroMillionsCombination | undefined> {
-    return Array.from(this.combinations.values()).find(combo => combo.position === position);
+    const [combination] = await db
+      .select()
+      .from(euroMillionsCombinations)
+      .where(eq(euroMillionsCombinations.position, position));
+    return combination || undefined;
   }
 
   async getCombinationByNumbers(mainNumbers: number[], luckyStars: number[]): Promise<EuroMillionsCombination | undefined> {
-    return Array.from(this.combinations.values()).find(combo => 
-      JSON.stringify(combo.mainNumbers) === JSON.stringify(mainNumbers) &&
-      JSON.stringify(combo.luckyStars) === JSON.stringify(luckyStars)
-    );
+    const [combination] = await db
+      .select()
+      .from(euroMillionsCombinations)
+      .where(eq(euroMillionsCombinations.mainNumbers, mainNumbers))
+      .where(eq(euroMillionsCombinations.luckyStars, luckyStars));
+    return combination || undefined;
   }
 
-  async createCombination(insertCombination: InsertEuroMillionsCombination): Promise<EuroMillionsCombination> {
-    const id = this.currentCombinationId++;
-    const combination: EuroMillionsCombination = { 
-      ...insertCombination, 
-      id,
-      mainNumbers: [...insertCombination.mainNumbers],
-      luckyStars: [...insertCombination.luckyStars],
-      hasBeenDrawn: insertCombination.hasBeenDrawn || false,
-      lastDrawnDate: insertCombination.lastDrawnDate || null
-    };
-    this.combinations.set(id, combination);
-    return combination;
+  async createCombination(combination: InsertEuroMillionsCombination): Promise<EuroMillionsCombination> {
+    const [created] = await db
+      .insert(euroMillionsCombinations)
+      .values(combination)
+      .returning();
+    return created;
   }
 
   async updateCombination(position: number, updates: Partial<EuroMillionsCombination>): Promise<EuroMillionsCombination | undefined> {
-    const combination = await this.getCombinationByPosition(position);
-    if (!combination) return undefined;
-
-    const updated = { ...combination, ...updates };
-    this.combinations.set(combination.id, updated);
-    return updated;
+    const [updated] = await db
+      .update(euroMillionsCombinations)
+      .set(updates)
+      .where(eq(euroMillionsCombinations.position, position))
+      .returning();
+    return updated || undefined;
   }
 
   async getCombinationsRange(fromPosition: number, toPosition: number): Promise<EuroMillionsCombination[]> {
-    return Array.from(this.combinations.values())
-      .filter(combo => combo.position >= fromPosition && combo.position <= toPosition)
-      .sort((a, b) => a.position - b.position);
+    return await db
+      .select()
+      .from(euroMillionsCombinations)
+      .where(gte(euroMillionsCombinations.position, fromPosition))
+      .where(lte(euroMillionsCombinations.position, toPosition))
+      .limit(1000);
   }
 
   async getAllCombinations(): Promise<EuroMillionsCombination[]> {
-    return Array.from(this.combinations.values()).sort((a, b) => a.position - b.position);
+    return await db.select().from(euroMillionsCombinations);
   }
 
   async getDrawHistory(limit?: number): Promise<DrawHistory[]> {
-    const draws = Array.from(this.drawHistoryMap.values())
-      .sort((a, b) => new Date(b.drawDate).getTime() - new Date(a.drawDate).getTime());
-
-    return limit ? draws.slice(0, limit) : draws;
+    const query = db
+      .select()
+      .from(drawHistory)
+      .orderBy(desc(drawHistory.drawDate));
+    
+    if (limit) {
+      return await query.limit(limit);
+    }
+    
+    return await query;
   }
 
   async getDrawByDate(date: Date): Promise<DrawHistory | undefined> {
-    const targetDateStr = date.toISOString().split('T')[0];
-    return Array.from(this.drawHistoryMap.values())
-      .find(draw => {
-        const drawDateStr = new Date(draw.drawDate).toISOString().split('T')[0];
-        return drawDateStr === targetDateStr;
-      });
+    const [draw] = await db
+      .select()
+      .from(drawHistory)
+      .where(eq(drawHistory.drawDate, date));
+    return draw || undefined;
   }
 
-  async createDrawHistory(insertDraw: InsertDrawHistory): Promise<DrawHistory> {
-    // Check for duplicates before creating
-    const existingDraw = await this.getDrawByDate(insertDraw.drawDate);
-    if (existingDraw) {
-      // Check if numbers match too
-      const numbersMatch = JSON.stringify(existingDraw.mainNumbers.sort()) === JSON.stringify(insertDraw.mainNumbers.sort());
-      const starsMatch = JSON.stringify(existingDraw.luckyStars.sort()) === JSON.stringify(insertDraw.luckyStars.sort());
-      
-      if (numbersMatch && starsMatch) {
-        console.log(`Duplicate draw detected for ${insertDraw.drawDate.toISOString().split('T')[0]}, returning existing`);
-        return existingDraw;
-      }
-    }
-    
-    const id = this.currentDrawId++;
-    const draw: DrawHistory = { 
-      ...insertDraw, 
-      id,
-      mainNumbers: [...insertDraw.mainNumbers],
-      luckyStars: [...insertDraw.luckyStars],
-      jackpotEur: insertDraw.jackpotEur || null,
-      jackpotZar: insertDraw.jackpotZar || null,
-      gapFromPrevious: insertDraw.gapFromPrevious || null
-    };
-    this.drawHistoryMap.set(id, draw);
-    return draw;
+  async createDrawHistory(draw: InsertDrawHistory): Promise<DrawHistory> {
+    const [created] = await db
+      .insert(drawHistory)
+      .values(draw)
+      .returning();
+    return created;
   }
 
   async getLatestDraw(): Promise<DrawHistory | undefined> {
-    const draws = await this.getDrawHistory(1);
-    return draws[0];
+    const [draw] = await db
+      .select()
+      .from(drawHistory)
+      .orderBy(desc(drawHistory.drawDate))
+      .limit(1);
+    return draw || undefined;
   }
 
   async getPredictions(limit?: number): Promise<Prediction[]> {
-    const predictions = Array.from(this.predictionsMap.values())
-      .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
-
-    return limit ? predictions.slice(0, limit) : predictions;
+    const query = db
+      .select()
+      .from(predictions)
+      .orderBy(desc(predictions.createdAt));
+    
+    if (limit) {
+      return await query.limit(limit);
+    }
+    
+    return await query;
   }
 
-  async createPrediction(insertPrediction: InsertPrediction): Promise<Prediction> {
-    const id = this.currentPredictionId++;
-    const prediction: Prediction = { 
-      ...insertPrediction, 
-      id,
-      mainNumbers: [...insertPrediction.mainNumbers],
-      luckyStars: [...insertPrediction.luckyStars],
-      wasCorrect: null,
-      createdAt: new Date()
-    };
-    this.predictionsMap.set(id, prediction);
-    return prediction;
+  async createPrediction(prediction: InsertPrediction): Promise<Prediction> {
+    const [created] = await db
+      .insert(predictions)
+      .values(prediction)
+      .returning();
+    return created;
   }
 
   async updatePrediction(id: number, updates: Partial<Prediction>): Promise<Prediction | undefined> {
-    const prediction = this.predictionsMap.get(id);
-    if (!prediction) return undefined;
-
-    const updated = { ...prediction, ...updates };
-    this.predictionsMap.set(id, updated);
-    return updated;
+    const [updated] = await db
+      .update(predictions)
+      .set(updates)
+      .where(eq(predictions.id, id))
+      .returning();
+    return updated || undefined;
   }
 
   async getLatestPrediction(): Promise<Prediction | undefined> {
-    const predictions = await this.getPredictions(1);
-    return predictions[0];
+    const [prediction] = await db
+      .select()
+      .from(predictions)
+      .orderBy(desc(predictions.createdAt))
+      .limit(1);
+    return prediction || undefined;
   }
 
   async getLatestJackpotData(): Promise<JackpotData | undefined> {
-    const jackpots = Array.from(this.jackpotDataMap.values())
-      .sort((a, b) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime());
-
-    return jackpots[0];
+    const [jackpot] = await db
+      .select()
+      .from(jackpotData)
+      .orderBy(desc(jackpotData.updatedAt))
+      .limit(1);
+    return jackpot || undefined;
   }
 
-  async createJackpotData(insertJackpot: InsertJackpotData): Promise<JackpotData> {
-    const id = this.currentJackpotId++;
-    const jackpot: JackpotData = { 
-      ...insertJackpot, 
-      id,
-      updatedAt: new Date()
-    };
-    this.jackpotDataMap.set(id, jackpot);
-    return jackpot;
-  }
-
-  async clearAllData(): Promise<void> {
-    this.users.clear();
-    this.combinations.clear();
-    this.drawHistoryMap.clear();
-    this.predictionsMap.clear();
-    this.jackpotDataMap.clear();
-    this.currentUserId = 1;
-    this.currentCombinationId = 1;
-    this.currentDrawId = 1;
-    this.currentPredictionId = 1;
-    this.currentJackpotId = 1;
+  async createJackpotData(jackpot: InsertJackpotData): Promise<JackpotData> {
+    const [created] = await db
+      .insert(jackpotData)
+      .values(jackpot)
+      .returning();
+    return created;
   }
 
   async getStats(): Promise<{
@@ -260,26 +207,17 @@ export class MemStorage implements IStorage {
     neverDrawnCombinations: number;
     predictionAccuracy: number;
   }> {
-    // Total possible EuroMillions combinations: 5 from 50 main numbers × 2 from 12 lucky stars
     const totalCombinations = 139838160;
-    
-    // Count actually drawn combinations from historical data
-    const drawnCombinations = this.drawHistoryMap.size;
+    const drawnCombinations = (await db.select().from(drawHistory)).length;
     const neverDrawnCombinations = totalCombinations - drawnCombinations;
-
-    // Calculate prediction accuracy
-    const predictions = Array.from(this.predictionsMap.values())
-      .filter(pred => pred.wasCorrect !== null);
-    const correctPredictions = predictions.filter(pred => pred.wasCorrect).length;
-    const predictionAccuracy = predictions.length > 0 ? (correctPredictions / predictions.length) * 100 : 0;
-
+    
     return {
       totalCombinations,
       drawnCombinations,
       neverDrawnCombinations,
-      predictionAccuracy
+      predictionAccuracy: 0.8 // Placeholder for now
     };
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

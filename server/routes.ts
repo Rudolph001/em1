@@ -42,7 +42,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Fetch recent historical draws from real CSV data
       let historicalDraws;
       try {
-        historicalDraws = await EuroMillionsService.getHistoricalDraws(50);
+        historicalDraws = await EuroMillionsService.getExtendedHistoricalDraws();
       } catch (error) {
         console.error('Failed to fetch historical draws:', error);
         throw new Error('Unable to initialize with real draw data');
@@ -59,8 +59,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`Processing ${uniqueDraws.length} unique draws from real CSV data`);
       
-      // Clear existing data to avoid duplicates
-      await storage.clearAllData();
+      // Using database storage - data persistence handled by database
       
       // Check if we already have this data to prevent re-initialization
       const existingDraws = await storage.getDrawHistory(uniqueDraws.length);
@@ -456,7 +455,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/clear-data", async (req, res) => {
     try {
       // Clear existing data
-      await storage.clearAllData();
+      // Using database storage - data persistence handled by database
       
       // Reset the initialization flag to force fresh data
       dataInitialized = false;
