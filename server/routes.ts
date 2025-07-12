@@ -353,6 +353,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test CSV data parsing (for debugging)
+  app.get("/api/test-csv", async (req, res) => {
+    try {
+      const latestDraw = await EuroMillionsService.getLatestDraw();
+      const historicalDraws = await EuroMillionsService.getHistoricalDraws(5);
+      
+      res.json({
+        latestDraw,
+        historicalDraws,
+        message: 'CSV data test'
+      });
+    } catch (error) {
+      console.error('Error testing CSV:', error);
+      res.status(500).json({ error: 'Failed to test CSV data' });
+    }
+  });
+
   // Update data (manual trigger)
   app.post("/api/update", async (req, res) => {
     try {

@@ -7,6 +7,7 @@ export interface EuroMillionsDrawResult {
 
 export class EuroMillionsService {
   private static readonly API_BASE_URL = 'https://euromillions.api.pedromealha.dev/v1';
+  private static readonly CSV_URL = 'https://www.national-lottery.co.uk/results/euromillions/draw-history/csv';
   private static lastRequestTime = 0;
   private static readonly REQUEST_DELAY = 2000; // 2 seconds between requests
   
@@ -57,44 +58,92 @@ export class EuroMillionsService {
   }
 
   /**
-   * Fetch the latest EuroMillions draw result
+   * Parse CSV data from National Lottery
+   */
+  private static parseCSVData(csvText: string): EuroMillionsDrawResult[] {
+    const lines = csvText.split('\n').slice(1); // Skip header
+    const draws: EuroMillionsDrawResult[] = [];
+    
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      
+      const parts = line.split(',');
+      if (parts.length < 8) continue;
+      
+      try {
+        const date = parts[0].trim();
+        const numbers = [
+          parseInt(parts[1]),
+          parseInt(parts[2]),
+          parseInt(parts[3]),
+          parseInt(parts[4]),
+          parseInt(parts[5])
+        ];
+        const stars = [
+          parseInt(parts[6]),
+          parseInt(parts[7])
+        ];
+        
+        // Convert date format from DD-MMM-YYYY to YYYY-MM-DD
+        const [day, month, year] = date.split('-');
+        const monthMap: { [key: string]: string } = {
+          'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+          'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+          'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+        };
+        const isoDate = `${year}-${monthMap[month]}-${day.padStart(2, '0')}`;
+        
+        draws.push({
+          date: isoDate,
+          numbers,
+          stars,
+          jackpot: 100000000 // Estimated, real jackpot data would need additional API
+        });
+      } catch (error) {
+        console.error('Error parsing CSV line:', line, error);
+      }
+    }
+    
+    return draws.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }
+
+  /**
+   * Fetch the latest EuroMillions draw result from National Lottery CSV
    */
   static async getLatestDraw(): Promise<EuroMillionsDrawResult | null> {
     try {
-      // Since API doesn't have 2025 data, return the most recent mock draw
-      const mockDraws = this.generateMockRecentDraws();
-      return mockDraws[0]; // Most recent draw
+      const response = await fetch(this.CSV_URL);
+      if (!response.ok) {
+        throw new Error(`CSV fetch failed: ${response.status}`);
+      }
+      
+      const csvText = await response.text();
+      const draws = this.parseCSVData(csvText);
+      
+      return draws.length > 0 ? draws[0] : null;
     } catch (error) {
-      console.error('Error fetching latest draw:', error);
+      console.error('Error fetching latest draw from CSV:', error);
       return null;
     }
   }
   
   /**
-   * Fetch historical EuroMillions draws
+   * Fetch historical EuroMillions draws from National Lottery CSV
    */
   static async getHistoricalDraws(limit: number = 50): Promise<EuroMillionsDrawResult[]> {
     try {
-      await this.addRequestDelay();
-      const response = await fetch(`${this.API_BASE_URL}/draws?limit=${limit}`);
-      
+      const response = await fetch(this.CSV_URL);
       if (!response.ok) {
-        if (response.status === 429) {
-          console.log('API rate limited, using 2025 mock data...');
-          return this.generateMockRecentDraws();
-        }
-        throw new Error(`API request failed: ${response.status}`);
+        throw new Error(`CSV fetch failed: ${response.status}`);
       }
       
-      const data = await response.json();
+      const csvText = await response.text();
+      const draws = this.parseCSVData(csvText);
       
-      // The API only has historical data up to 2022-2023, so we'll use mock data for 2025
-      console.log('API data is from 2004-2023, using current 2025 mock data...');
-      return this.generateMockRecentDraws();
-      
+      return draws.slice(0, limit);
     } catch (error) {
-      console.error('Error fetching historical draws, using mock 2025 data:', error);
-      return this.generateMockRecentDraws();
+      console.error('Error fetching historical draws from CSV:', error);
+      return [];
     }
   }
   
