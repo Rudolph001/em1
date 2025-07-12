@@ -224,6 +224,19 @@ export class MemStorage implements IStorage {
     return jackpot;
   }
 
+  async clearAllData(): Promise<void> {
+    this.users.clear();
+    this.combinations.clear();
+    this.drawHistoryMap.clear();
+    this.predictionsMap.clear();
+    this.jackpotDataMap.clear();
+    this.currentUserId = 1;
+    this.currentCombinationId = 1;
+    this.currentDrawId = 1;
+    this.currentPredictionId = 1;
+    this.currentJackpotId = 1;
+  }
+
   async getStats(): Promise<{
     totalCombinations: number;
     drawnCombinations: number;
@@ -246,19 +259,6 @@ export class MemStorage implements IStorage {
       neverDrawnCombinations,
       predictionAccuracy
     };
-  }
-
-  async clearAllData(): Promise<void> {
-    this.users.clear();
-    this.combinations.clear();
-    this.drawHistoryMap.clear();
-    this.predictionsMap.clear();
-    this.jackpotDataMap.clear();
-    this.currentUserId = 1;
-    this.currentCombinationId = 1;
-    this.currentDrawId = 1;
-    this.currentPredictionId = 1;
-    this.currentJackpotId = 1;
   }
 }
 

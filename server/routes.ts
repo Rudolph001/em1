@@ -9,6 +9,11 @@ import { insertDrawHistorySchema, insertPredictionSchema, insertJackpotDataSchem
 
 let dataInitialized = false;
 
+// Reset initialization flag to force re-initialization
+const resetDataInitialization = () => {
+  dataInitialized = false;
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize data on first request
   async function initializeData() {
@@ -17,12 +22,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('Initializing EuroMillions data...');
       
-      // Check if we already have data to avoid duplicates
-      const existingHistory = await storage.getDrawHistory(1);
-      if (existingHistory.length > 0) {
-        console.log('Data already exists, skipping initialization');
-        dataInitialized = true;
-        return;
+      // Check if we already have sufficient data
+      const existingHistory = await storage.getDrawHistory(10);
+      if (existingHistory.length >= 10) {
+        // Check if we have diverse data (not all the same numbers)
+        const uniqueNumberSets = new Set(existingHistory.map(draw => 
+          JSON.stringify([...draw.mainNumbers.sort(), ...draw.luckyStars.sort()])
+        ));
+        
+        if (uniqueNumberSets.size >= 5) {
+          console.log('Sufficient diverse data already exists, skipping initialization');
+          dataInitialized = true;
+          return;
+        } else {
+          console.log('Existing data appears to be duplicated, reinitializing...');
+        }
       }
       
       // Fetch recent historical draws from real CSV data
@@ -44,6 +58,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       
       console.log(`Processing ${uniqueDraws.length} unique draws from real CSV data`);
+      
+      // Clear existing data to avoid duplicates
+      await storage.clearAllData();
       
       let previousPosition = 0;
       for (const draw of uniqueDraws) {
@@ -403,6 +420,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error testing CSV:', error);
       res.status(500).json({ error: 'Failed to test CSV data' });
+    }
+  });
+
+  // Reset and reinitialize data
+  app.post("/api/reset", async (req, res) => {
+    try {
+      console.log('Resetting and reinitializing data...');
+      dataInitialized = false;
+      await initializeData();
+      res.json({ message: "Data reset and reinitialized successfully" });
+    } catch (error) {
+      console.error('Error resetting data:', error);
+      res.status(500).json({ error: "Failed to reset data" });
     }
   });
 
