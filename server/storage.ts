@@ -260,11 +260,14 @@ export class MemStorage implements IStorage {
     neverDrawnCombinations: number;
     predictionAccuracy: number;
   }> {
-    const totalCombinations = this.combinations.size;
-    const drawnCombinations = Array.from(this.combinations.values())
-      .filter(combo => combo.hasBeenDrawn).length;
+    // Total possible EuroMillions combinations: 5 from 50 main numbers × 2 from 12 lucky stars
+    const totalCombinations = 139838160;
+    
+    // Count actually drawn combinations from historical data
+    const drawnCombinations = this.drawHistoryMap.size;
     const neverDrawnCombinations = totalCombinations - drawnCombinations;
 
+    // Calculate prediction accuracy
     const predictions = Array.from(this.predictionsMap.values())
       .filter(pred => pred.wasCorrect !== null);
     const correctPredictions = predictions.filter(pred => pred.wasCorrect).length;
