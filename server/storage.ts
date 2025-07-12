@@ -147,11 +147,28 @@ export class MemStorage implements IStorage {
   }
 
   async getDrawByDate(date: Date): Promise<DrawHistory | undefined> {
+    const targetDateStr = date.toISOString().split('T')[0];
     return Array.from(this.drawHistoryMap.values())
-      .find(draw => new Date(draw.drawDate).toDateString() === date.toDateString());
+      .find(draw => {
+        const drawDateStr = new Date(draw.drawDate).toISOString().split('T')[0];
+        return drawDateStr === targetDateStr;
+      });
   }
 
   async createDrawHistory(insertDraw: InsertDrawHistory): Promise<DrawHistory> {
+    // Check for duplicates before creating
+    const existingDraw = await this.getDrawByDate(insertDraw.drawDate);
+    if (existingDraw) {
+      // Check if numbers match too
+      const numbersMatch = JSON.stringify(existingDraw.mainNumbers.sort()) === JSON.stringify(insertDraw.mainNumbers.sort());
+      const starsMatch = JSON.stringify(existingDraw.luckyStars.sort()) === JSON.stringify(insertDraw.luckyStars.sort());
+      
+      if (numbersMatch && starsMatch) {
+        console.log(`Duplicate draw detected for ${insertDraw.drawDate.toISOString().split('T')[0]}, returning existing`);
+        return existingDraw;
+      }
+    }
+    
     const id = this.currentDrawId++;
     const draw: DrawHistory = { 
       ...insertDraw, 

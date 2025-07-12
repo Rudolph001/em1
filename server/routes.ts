@@ -52,8 +52,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const uniqueDraws = historicalDraws.filter((draw, index, self) => 
         index === self.findIndex(d => 
           d.date === draw.date && 
-          JSON.stringify(d.numbers) === JSON.stringify(draw.numbers) &&
-          JSON.stringify(d.stars) === JSON.stringify(draw.stars)
+          JSON.stringify(d.numbers.sort()) === JSON.stringify(draw.numbers.sort()) &&
+          JSON.stringify(d.stars.sort()) === JSON.stringify(draw.stars.sort())
         )
       );
       
@@ -62,12 +62,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Clear existing data to avoid duplicates
       await storage.clearAllData();
       
+      // Check if we already have this data to prevent re-initialization
+      const existingDraws = await storage.getDrawHistory(uniqueDraws.length);
+      if (existingDraws.length > 0) {
+        // Check if the latest draw matches to avoid duplicate initialization
+        const latestExisting = existingDraws[0];
+        const latestNew = uniqueDraws[0];
+        if (latestExisting.drawDate.toISOString().split('T')[0] === latestNew.date) {
+          console.log('Data already up to date, skipping re-initialization');
+          dataInitialized = true;
+          return;
+        }
+      }
+      
+      const positions: number[] = [];
       let previousPosition = 0;
+      
       for (const draw of uniqueDraws) {
+        // Check if this exact draw already exists
+        const existingDraw = await storage.getDrawByDate(new Date(draw.date));
+        if (existingDraw) {
+          console.log(`Skipping duplicate draw for ${draw.date}`);
+          continue;
+        }
+        
         // Store draw history with original order as drawn
         const sortedNumbers = [...draw.numbers].sort((a, b) => a - b);
         const sortedStars = [...draw.stars].sort((a, b) => a - b);
         const position = CombinationsService.calculatePosition(sortedNumbers, sortedStars);
+        positions.push(position);
+        
         const gapFromPrevious = previousPosition > 0 ? position - previousPosition : 0;
         
         try {
@@ -91,6 +115,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
           
           previousPosition = position;
+          console.log(`Stored draw for ${draw.date}: [${draw.numbers}] + [${draw.stars}] at position ${position}`);
         } catch (error) {
           console.error('Error storing draw:', draw.date, error);
         }
