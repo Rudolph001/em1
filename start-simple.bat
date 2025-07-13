@@ -12,4 +12,4 @@ echo.
 
 :: Set environment and start directly
 set NODE_ENV=development
-tsx server/index.ts
+npx tsx server/index.ts
