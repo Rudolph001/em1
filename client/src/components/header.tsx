@@ -21,7 +21,7 @@ export function Header() {
             <i className="fas fa-chart-line text-primary text-2xl mr-3"></i>
             <h1 className="text-xl font-bold text-gray-900">EuroMillions Analysis Hub</h1>
           </div>
-          
+
           <div className="flex items-center space-x-6">
             {/* Current Jackpot */}
             <div className="text-center">
@@ -41,7 +41,7 @@ export function Header() {
                 </div>
               )}
             </div>
-            
+
             {/* Next Draw Countdown */}
             <div className="text-center">
               <div className="text-xs text-gray-500">Next Draw</div>
@@ -62,7 +62,7 @@ export function Header() {
                 }) : 'Loading...'}
               </div>
             </div>
-            
+
             {/* Exchange Rate */}
             <div className="text-center">
               <div className="text-xs text-gray-500">EUR/ZAR Rate</div>
