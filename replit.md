@@ -17,6 +17,10 @@ This is a full-stack EuroMillions lottery analysis and prediction web applicatio
   - Exchange rate: 20.9 ZAR per EUR (live market rate)
   - Historical draws: 52 real draws from National Lottery CSV
   - Next draw: July 15, 2025 at 8:15 PM GMT
+- ✅ Created local setup files for Windows:
+  - `run-local.bat` - One-click setup and run
+  - `SETUP-INSTRUCTIONS.md` - Simple setup guide
+  - Supports both cloud and local PostgreSQL databases
 
 ## User Preferences
 
