@@ -70,6 +70,11 @@ echo [4/4] Starting EuroMillions App...
 echo.
 echo ==========================================
 echo   App starting at: http://localhost:5000
+echo   
+echo   🚀 First time? The app will load historical
+echo      EuroMillions data automatically (may take
+echo      30-60 seconds on first launch)
+echo   
 echo   Press Ctrl+C to stop
 echo ==========================================
 echo.

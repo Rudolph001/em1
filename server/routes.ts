@@ -23,8 +23,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Initializing EuroMillions data...');
       
       // Check if we already have sufficient data
-      const existingHistory = await storage.getDrawHistory(10);
-      if (existingHistory.length >= 10) {
+      const existingHistory = await storage.getDrawHistory(50);
+      if (existingHistory.length >= 20) {
         // Check if we have diverse data (not all the same numbers)
         const uniqueNumberSets = new Set(existingHistory.map(draw => 
           JSON.stringify([...draw.mainNumbers.sort(), ...draw.luckyStars.sort()])
@@ -36,13 +36,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return year === 2024 || year === 2025;
         });
         
-        if (uniqueNumberSets.size >= 5 && hasValidDates) {
+        // Check if we have recent data (within last 3 months)
+        const now = new Date();
+        const threeMonthsAgo = new Date(now.getTime() - (90 * 24 * 60 * 60 * 1000));
+        const hasRecentData = existingHistory.some(draw => 
+          draw.drawDate >= threeMonthsAgo
+        );
+        
+        if (uniqueNumberSets.size >= 10 && hasValidDates && hasRecentData) {
           console.log('Sufficient diverse data already exists, skipping initialization');
           dataInitialized = true;
           return;
         } else {
-          console.log('Existing data appears to be invalid or duplicated, reinitializing...');
+          console.log(`Existing data check: unique sets=${uniqueNumberSets.size}, valid dates=${hasValidDates}, recent data=${hasRecentData}`);
+          console.log('Data appears insufficient or outdated, reinitializing...');
         }
+      } else {
+        console.log(`Only ${existingHistory.length} draws found, need at least 20 for initialization`);
       }
       
       // Fetch all available historical draws from real CSV data
@@ -644,6 +654,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error resetting data:', error);
       res.status(500).json({ error: "Failed to reset data" });
+    }
+  });
+
+  // Force data initialization for fresh local setups
+  app.post("/api/initialize", async (req, res) => {
+    try {
+      console.log('Force initializing data for local setup...');
+      
+      // Always reset and initialize regardless of current state
+      dataInitialized = false;
+      
+      // Get historical data
+      const historicalDraws = await EuroMillionsService.getExtendedHistoricalDraws();
+      console.log(`Found ${historicalDraws.length} historical draws to initialize`);
+      
+      if (historicalDraws.length === 0) {
+        return res.status(503).json({ 
+          error: "No historical data available", 
+          message: "Unable to fetch historical draws from EuroMillions API" 
+        });
+      }
+
+      // Clear any existing data first
+      // Since we're using PostgreSQL, we'll rely on the existing logic in initializeData
+
+      await initializeData();
+      
+      // Verify the data was loaded
+      const loadedHistory = await storage.getDrawHistory(10);
+      console.log(`Verification: Loaded ${loadedHistory.length} draws into database`);
+      
+      res.json({ 
+        message: "Data initialized successfully", 
+        historicalDraws: historicalDraws.length,
+        loadedDraws: loadedHistory.length
+      });
+    } catch (error) {
+      console.error('Error initializing data:', error);
+      res.status(500).json({ 
+        error: "Failed to initialize data",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 

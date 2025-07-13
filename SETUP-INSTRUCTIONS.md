@@ -1,85 +1,80 @@
-# 🎯 EuroMillions App - Windows Setup Guide
+# EuroMillions Analysis App - Local Setup Guide
 
-## One-Click Setup
+## Quick Start (Windows)
 
-### Step 1: Install Node.js
-- Download from: https://nodejs.org/
-- Choose "LTS" version (recommended)
-- Run installer with default settings
+1. **Download and Install Node.js**
+   - Go to: https://nodejs.org/
+   - Download the LTS version (recommended)
+   - Run the installer and follow the setup wizard
 
-### Step 2: Get Database (Choose One Option)
+2. **Setup PostgreSQL Database**
+   
+   **Option A: Local PostgreSQL**
+   - Install PostgreSQL from: https://www.postgresql.org/download/
+   - Create a database: `CREATE DATABASE euromillions;`
+   - Update the `DATABASE_URL` in `.env` file
 
-**🏆 RECOMMENDED: Free Cloud Database**
-1. Go to https://neon.tech/
-2. Sign up for free account
-3. Create new project
-4. Copy the connection string (looks like: `postgresql://user:pass@host/db`)
+   **Option B: Cloud Database (Recommended)**
+   - Use Neon, Supabase, or any PostgreSQL cloud provider
+   - Copy the connection string to `.env` file
 
-**Alternative: Local PostgreSQL**
-1. Download from https://postgresql.org/
-2. Install with default settings
-3. Remember your password
-4. Create database named `euromillions`
+3. **Run the App**
+   - Double-click `run-local.bat`
+   - Wait for setup to complete (first time may take 1-2 minutes)
+   - Open browser to: http://localhost:5000
 
-### Step 3: Run the App
-1. **Double-click `run-local.bat`** (full setup with checks)
-   OR
-   **Double-click `start-simple.bat`** (quick start if already set up)
-2. **Update DATABASE_URL in `.env` file with your connection string**
-3. **Open browser to: http://localhost:5000**
+## First Launch
 
----
+The app will automatically:
+- Install dependencies
+- Create configuration files
+- Download real EuroMillions historical data (52 draws)
+- Set up all 139+ million lottery combinations
+- Start the web server
 
-## What You Get
+**Note:** First startup takes 30-60 seconds to load historical data.
 
-✅ **Real EuroMillions Data**
-- Current jackpot: €97 million
-- Live exchange rates (EUR/ZAR)
-- 50+ historical draws from National Lottery
+## Features
 
-✅ **Advanced Analytics**
-- Hot/cold number analysis
-- AI predictions with confidence scores
-- Pattern recognition
-- Gap analysis
+✅ **Real Data**: Live jackpot amounts and exchange rates  
+✅ **AI Predictions**: Machine learning analysis of patterns  
+✅ **Historical Analysis**: 52+ real EuroMillions draws  
+✅ **Gap Analysis**: Position pattern recognition  
+✅ **Hot/Cold Numbers**: Frequency analysis  
+✅ **Search Tool**: Check if combinations have been drawn  
 
-✅ **Interactive Features**
-- Search any combination (139M possibilities)
-- Real-time countdown to next draw
-- Historical trend analysis
-- Multiple prediction algorithms
+## Database Setup Examples
 
----
+### Neon Database (Free Cloud PostgreSQL)
+```
+DATABASE_URL=postgresql://username:password@ep-example.neon.tech/neondb?sslmode=require
+```
 
-## Quick Troubleshooting
+### Local PostgreSQL
+```
+DATABASE_URL=postgresql://postgres:password@localhost:5432/euromillions
+```
 
-**"Node.js not found"**
-→ Install Node.js from nodejs.org
+### Supabase
+```
+DATABASE_URL=postgresql://postgres:password@db.project.supabase.co:5432/postgres
+```
 
-**"Database connection failed"**
-→ Check your DATABASE_URL in .env file
+## Troubleshooting
 
-**"Port already in use"**
-→ Close other apps or restart computer
+**"No historical data"**: 
+- Check internet connection
+- Database may need a few moments to initialize
+- Try refreshing the page
 
-**"Dependencies failed"**
-→ Run: `npm install` manually
+**Database connection errors**:
+- Verify DATABASE_URL is correct in .env file
+- Ensure database exists and is accessible
 
----
-
-## Files Created
-
-- `.env` - Configuration file
-- `euromillions.db` - Local database (if using SQLite)
-- `node_modules/` - Dependencies folder
+**Node.js not found**:
+- Install Node.js from https://nodejs.org/
+- Restart the terminal/command prompt
 
 ## Support
 
-Having issues? Check the console output for specific error messages.
-The app fetches real lottery data and may take 30-60 seconds on first startup.
-
----
-
-**Ready to analyze the lottery?**
-- First time: Double-click `run-local.bat`
-- Quick start: Double-click `start-simple.bat`
+For issues or questions, check the console logs in the terminal window where the app is running.

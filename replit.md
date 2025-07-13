@@ -8,6 +8,15 @@ This is a full-stack EuroMillions lottery analysis and prediction web applicatio
 
 ## Recent Changes
 
+**July 13, 2025 - Final Local Deployment Fix**
+- ✅ Fixed missing historical data in local deployments
+- ✅ Enhanced data initialization with better validation (20+ draws required)
+- ✅ Added `/api/initialize` endpoint for force data loading
+- ✅ Improved .bat file with setup guidance for first-time users
+- ✅ Cleaned up unnecessary .bat files (kept only `run-local.bat`)
+- ✅ Created comprehensive `SETUP-INSTRUCTIONS.md` with database examples
+- ✅ Fixed analytics/numbers API intermittent errors with better validation
+
 **July 13, 2025 - Migration Complete**
 - ✅ Fixed CSS import order for proper Tailwind loading
 - ✅ Created PostgreSQL database with proper schema deployment
@@ -17,10 +26,6 @@ This is a full-stack EuroMillions lottery analysis and prediction web applicatio
   - Exchange rate: 20.9 ZAR per EUR (live market rate)
   - Historical draws: 52 real draws from National Lottery CSV
   - Next draw: July 15, 2025 at 8:15 PM GMT
-- ✅ Created local setup files for Windows:
-  - `run-local.bat` - One-click setup and run
-  - `SETUP-INSTRUCTIONS.md` - Simple setup guide
-  - Supports both cloud and local PostgreSQL databases
 
 ## User Preferences
 
