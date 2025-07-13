@@ -418,6 +418,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get main predictions (with alternatives)
+  app.get("/api/predictions", async (req, res) => {
+    try {
+      await initializeData();
+      const history = await storage.getDrawHistory();
+      const positions = history.map(draw => draw.position);
+      
+      // Get main prediction
+      let mainPrediction = await storage.getLatestPrediction();
+      
+      // If no prediction exists or it's missing new fields, generate a new one
+      if (!mainPrediction || !mainPrediction.reasoning || !mainPrediction.historicalDataPoints) {
+        const newPrediction = await PredictionService.generatePrediction(positions);
+        
+        mainPrediction = await storage.createPrediction({
+          drawDate: EuroMillionsService.getNextDrawDate(),
+          mainNumbers: newPrediction.mainNumbers,
+          luckyStars: newPrediction.luckyStars,
+          position: newPrediction.position,
+          confidence: newPrediction.confidence,
+          modelVersion: newPrediction.modelVersion,
+          reasoning: newPrediction.reasoning,
+          historicalDataPoints: newPrediction.historicalDataPoints
+        });
+      }
+      
+      // Get alternative predictions
+      const alternatives = await PredictionService.generateAlternativePredictions(positions);
+      
+      res.json({
+        mainPrediction,
+        predictions: alternatives,
+        totalHistoricalDraws: history.length,
+        dataQuality: {
+          earliestDraw: history[history.length - 1]?.drawDate,
+          latestDraw: history[0]?.drawDate,
+          totalDraws: history.length
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching predictions:', error);
+      res.status(500).json({ error: "Failed to fetch predictions" });
+    }
+  });
+
   // Get alternative predictions
   app.get("/api/predictions/alternatives", async (req, res) => {
     try {
