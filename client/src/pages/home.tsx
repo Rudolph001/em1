@@ -14,11 +14,11 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 font-roboto">
       <Header />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <LatestDraw />
         <StatsOverview />
-        
+
         <div className="bg-white rounded-lg shadow-lg mt-8">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-4 bg-transparent border-b border-gray-200 rounded-none">
@@ -51,25 +51,25 @@ export default function Home() {
                 Gap Analysis
               </TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="search" className="p-6">
               <SearchTab />
             </TabsContent>
-            
+
             <TabsContent value="predictions" className="p-6">
               <PredictionsTab />
             </TabsContent>
-            
+
             <TabsContent value="history" className="p-6">
               <HistoryTab />
             </TabsContent>
-            
+
             <TabsContent value="analytics" className="p-6">
               <AnalyticsTab />
             </TabsContent>
           </Tabs>
         </div>
-        
+
         <footer className="mt-12 bg-white rounded-lg shadow-md p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
