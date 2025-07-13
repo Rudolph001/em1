@@ -45,10 +45,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Fetch recent historical draws from real CSV data
+      // Fetch all available historical draws from real CSV data
       let historicalDraws;
       try {
         historicalDraws = await EuroMillionsService.getExtendedHistoricalDraws();
+        console.log(`Initializing with ${historicalDraws.length} historical draws`);
+        if (historicalDraws.length > 0) {
+          console.log(`Full date range available: ${historicalDraws[historicalDraws.length - 1]?.date} to ${historicalDraws[0]?.date}`);
+        }
       } catch (error) {
         console.error('Failed to fetch historical draws:', error);
         throw new Error('Unable to initialize with real draw data');
@@ -506,11 +510,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const latestDraw = await EuroMillionsService.getLatestDraw();
       const historicalDraws = await EuroMillionsService.getHistoricalDraws(5);
+      const allDraws = await EuroMillionsService.getExtendedHistoricalDraws();
+      
+      const dateRange = allDraws.length > 0 ? {
+        earliest: allDraws[allDraws.length - 1]?.date,
+        latest: allDraws[0]?.date,
+        totalCount: allDraws.length
+      } : null;
       
       res.json({
         latestDraw,
         historicalDraws,
-        message: 'CSV data test'
+        fullDatasetInfo: dateRange,
+        message: 'CSV data test - showing available date range'
       });
     } catch (error) {
       console.error('Error testing CSV:', error);

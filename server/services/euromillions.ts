@@ -155,7 +155,7 @@ export class EuroMillionsService {
   }
   
   /**
-   * Fetch all historical draws from January 2024 to present
+   * Fetch all available historical draws (full dataset)
    */
   static async getExtendedHistoricalDraws(): Promise<EuroMillionsDrawResult[]> {
     try {
@@ -169,21 +169,16 @@ export class EuroMillionsService {
       const csvText = await response.text();
       const allDraws = this.parseCSVData(csvText);
       
-      // Filter draws from January 2024 onwards and up to current date
-      const startDate = new Date('2024-01-01');
-      const currentDate = new Date();
-      const filteredDraws = allDraws.filter(draw => {
-        const drawDate = new Date(draw.date);
-        return drawDate >= startDate && drawDate <= currentDate;
-      });
-      
+      // Return all available draws (no date filtering - get everything from CSV)
       // Sort by date descending (most recent first)
-      filteredDraws.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      allDraws.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       
-      console.log(`Fetched ${filteredDraws.length} draws from January 2024 to present`);
-      console.log(`Date range: ${filteredDraws[filteredDraws.length - 1]?.date} to ${filteredDraws[0]?.date}`);
+      if (allDraws.length > 0) {
+        console.log(`Fetched ${allDraws.length} draws from full historical dataset`);
+        console.log(`Date range: ${allDraws[allDraws.length - 1]?.date} to ${allDraws[0]?.date}`);
+      }
       
-      return filteredDraws;
+      return allDraws;
     } catch (error) {
       console.error('Error fetching extended historical draws:', error);
       return [];
