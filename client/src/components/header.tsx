@@ -70,7 +70,7 @@ export function Header() {
                 <Skeleton className="h-6 w-16 mb-1" />
               ) : (
                 <div className="font-bold text-lg text-success">
-                  {exchangeRate ? exchangeRate.rate.toFixed(3) : '0.000'}
+                  {exchangeRate && typeof exchangeRate === 'number' ? exchangeRate.toFixed(3) : '0.000'}
                 </div>
               )}
               <div className="text-xs text-gray-500">Live</div>
