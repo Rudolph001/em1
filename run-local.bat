@@ -75,6 +75,11 @@ echo   🚀 First time? The app will load historical
 echo      EuroMillions data automatically (may take
 echo      30-60 seconds on first launch)
 echo   
+echo   ⚠️  If you see "0" drawn combinations:
+echo      1. Wait 30-60 seconds for data to load
+echo      2. Refresh browser (Ctrl+F5 or Cmd+Shift+R)
+echo      3. Run force-refresh-local.bat if needed
+echo   
 echo   Press Ctrl+C to stop
 echo ==========================================
 echo.
