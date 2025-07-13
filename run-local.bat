@@ -75,4 +75,4 @@ echo ==========================================
 echo.
 
 set NODE_ENV=development
-node start-local.js
+tsx server/index.ts

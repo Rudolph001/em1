@@ -22,8 +22,10 @@
 4. Create database named `euromillions`
 
 ### Step 3: Run the App
-1. **Double-click `run-local.bat`**
-2. **Paste your database URL when prompted**
+1. **Double-click `run-local.bat`** (full setup with checks)
+   OR
+   **Double-click `start-simple.bat`** (quick start if already set up)
+2. **Update DATABASE_URL in `.env` file with your connection string**
 3. **Open browser to: http://localhost:5000**
 
 ---
@@ -78,4 +80,6 @@ The app fetches real lottery data and may take 30-60 seconds on first startup.
 
 ---
 
-**Ready to analyze the lottery? Double-click `run-local.bat` to start!**
+**Ready to analyze the lottery?**
+- First time: Double-click `run-local.bat`
+- Quick start: Double-click `start-simple.bat`
