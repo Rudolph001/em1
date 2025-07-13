@@ -177,15 +177,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Expires', '0');
       
       // Get current exchange rate (fresh data)
-      const exchangeRate = await CurrencyService.getEurToZarRate();
-      const currentJackpot = await EuroMillionsService.getCurrentJackpot();
+      let exchangeRate;
+      let currentJackpot;
+      
+      try {
+        exchangeRate = await CurrencyService.getEurToZarRate();
+        console.log('Exchange rate fetch result:', exchangeRate);
+      } catch (error) {
+        console.error('Exchange rate fetch failed:', error);
+        exchangeRate = null;
+      }
+      
+      try {
+        currentJackpot = await EuroMillionsService.getCurrentJackpot();
+        console.log('Current jackpot fetch result:', currentJackpot);
+      } catch (error) {
+        console.error('Current jackpot fetch failed:', error);
+        currentJackpot = null;
+      }
       
       if (!currentJackpot || !exchangeRate) {
+        console.log('Falling back to stored data - currentJackpot:', currentJackpot, 'exchangeRate:', exchangeRate);
+        
         // Fallback to stored data if APIs are unavailable
         const jackpotData = await storage.getLatestJackpotData();
         if (!jackpotData) {
+          console.error('No stored jackpot data available');
           return res.status(404).json({ error: "No jackpot data available" });
         }
+        
+        console.log('Returning stored jackpot data:', jackpotData);
         return res.json(jackpotData);
       }
       
@@ -197,13 +218,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updatedAt: new Date()
       };
       
+      console.log('Fresh jackpot data calculated:', freshJackpotData);
+      
       // Update stored data with fresh values
-      await storage.createJackpotData(freshJackpotData);
+      try {
+        await storage.createJackpotData(freshJackpotData);
+        console.log('Successfully stored fresh jackpot data');
+      } catch (error) {
+        console.error('Failed to store jackpot data:', error);
+        // Continue anyway, we can still return the data
+      }
       
       res.json(freshJackpotData);
     } catch (error) {
-      console.error('Error fetching jackpot:', error);
-      res.status(500).json({ error: "Failed to fetch jackpot data" });
+      console.error('Error in jackpot endpoint:', error);
+      
+      // Try to return stored data as last resort
+      try {
+        const jackpotData = await storage.getLatestJackpotData();
+        if (jackpotData) {
+          console.log('Returning stored data as fallback after error');
+          return res.json(jackpotData);
+        }
+      } catch (storageError) {
+        console.error('Failed to get stored jackpot data:', storageError);
+      }
+      
+      res.status(500).json({ 
+        error: "Failed to fetch jackpot data",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
   
