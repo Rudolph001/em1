@@ -512,16 +512,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await initializeData();
       const history = await storage.getDrawHistory();
       
+      if (!history || history.length === 0) {
+        return res.status(503).json({ 
+          error: "Data not yet available", 
+          message: "Please wait for data initialization to complete" 
+        });
+      }
+      
       const numberFrequency = new Map<number, number>();
       const starFrequency = new Map<number, number>();
       
       history.forEach(draw => {
-        draw.mainNumbers.forEach(num => {
-          numberFrequency.set(num, (numberFrequency.get(num) || 0) + 1);
-        });
-        draw.luckyStars.forEach(star => {
-          starFrequency.set(star, (starFrequency.get(star) || 0) + 1);
-        });
+        if (draw.mainNumbers && Array.isArray(draw.mainNumbers)) {
+          draw.mainNumbers.forEach(num => {
+            if (typeof num === 'number' && !isNaN(num)) {
+              numberFrequency.set(num, (numberFrequency.get(num) || 0) + 1);
+            }
+          });
+        }
+        if (draw.luckyStars && Array.isArray(draw.luckyStars)) {
+          draw.luckyStars.forEach(star => {
+            if (typeof star === 'number' && !isNaN(star)) {
+              starFrequency.set(star, (starFrequency.get(star) || 0) + 1);
+            }
+          });
+        }
       });
       
       const hotNumbers = Array.from(numberFrequency.entries())
