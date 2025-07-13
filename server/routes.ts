@@ -30,12 +30,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           JSON.stringify([...draw.mainNumbers.sort(), ...draw.luckyStars.sort()])
         ));
         
-        if (uniqueNumberSets.size >= 5) {
+        // Also check if the data dates look reasonable (from 2024 onwards)
+        const hasValidDates = existingHistory.some(draw => {
+          const year = draw.drawDate.getFullYear();
+          return year === 2024 || year === 2025;
+        });
+        
+        if (uniqueNumberSets.size >= 5 && hasValidDates) {
           console.log('Sufficient diverse data already exists, skipping initialization');
           dataInitialized = true;
           return;
         } else {
-          console.log('Existing data appears to be duplicated, reinitializing...');
+          console.log('Existing data appears to be invalid or duplicated, reinitializing...');
         }
       }
       

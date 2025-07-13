@@ -91,6 +91,16 @@ export class EuroMillionsService {
         
         const isoDate = `${year}-${monthMap[month]}-${day.padStart(2, '0')}`;
         
+        // Validate the parsed date is reasonable (not in the future, not too old)
+        const parsedDate = new Date(isoDate);
+        const currentDate = new Date();
+        const earliestValidDate = new Date('2004-01-01'); // EuroMillions started in 2004
+        
+        if (parsedDate > currentDate || parsedDate < earliestValidDate) {
+          console.log(`Skipping line ${i}: date out of valid range`, isoDate);
+          continue;
+        }
+        
         draws.push({
           date: isoDate,
           numbers,
@@ -159,14 +169,20 @@ export class EuroMillionsService {
       const csvText = await response.text();
       const allDraws = this.parseCSVData(csvText);
       
-      // Filter draws from January 2024 onwards
+      // Filter draws from January 2024 onwards and up to current date
       const startDate = new Date('2024-01-01');
+      const currentDate = new Date();
       const filteredDraws = allDraws.filter(draw => {
         const drawDate = new Date(draw.date);
-        return drawDate >= startDate;
+        return drawDate >= startDate && drawDate <= currentDate;
       });
       
-      console.log(`Fetched ${filteredDraws.length} draws from January 2024 onwards`);
+      // Sort by date descending (most recent first)
+      filteredDraws.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      
+      console.log(`Fetched ${filteredDraws.length} draws from January 2024 to present`);
+      console.log(`Date range: ${filteredDraws[filteredDraws.length - 1]?.date} to ${filteredDraws[0]?.date}`);
+      
       return filteredDraws;
     } catch (error) {
       console.error('Error fetching extended historical draws:', error);
