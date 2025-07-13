@@ -289,6 +289,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       await initializeData();
       const stats = await storage.getStats();
+      
+      // Add cache-busting headers to ensure fresh data
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      
       res.json(stats);
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -592,6 +598,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await initializeData();
         history = await storage.getDrawHistory(limit);
       }
+      
+      // Add cache-busting headers to ensure fresh data
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       
       res.json(history);
     } catch (error) {

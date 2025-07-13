@@ -7,6 +7,8 @@ export function LatestDraw() {
   const { data: history, isLoading } = useQuery({
     queryKey: ['/api/history'],
     refetchInterval: 10 * 60 * 1000, // Refresh every 10 minutes
+    staleTime: 0, // Always consider data stale
+    refetchOnMount: true, // Always refetch when component mounts
   });
 
   const latestDraw = history && history.length > 0 ? history[0] : null;

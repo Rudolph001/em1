@@ -9,6 +9,8 @@ export function HistoryTab() {
   const { data: history, isLoading, refetch } = useQuery({
     queryKey: ['/api/history'],
     refetchInterval: 10 * 60 * 1000, // Refresh every 10 minutes
+    staleTime: 0, // Always consider data stale
+    refetchOnMount: true, // Always refetch when component mounts
   });
 
   const { data: dateRange } = useQuery({

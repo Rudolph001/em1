@@ -6,6 +6,8 @@ export function StatsOverview() {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['/api/stats'],
     refetchInterval: 5 * 60 * 1000, // Refresh every 5 minutes
+    staleTime: 0, // Always consider data stale
+    refetchOnMount: true, // Always refetch when component mounts
   });
 
   if (isLoading) {
