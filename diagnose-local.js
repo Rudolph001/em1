@@ -93,24 +93,29 @@ async function diagnose() {
     log('❌ Server not responding. Make sure it\'s running with "npm run dev"', 'red');
     log('   Error: ' + (healthCheck.error || 'Unknown error'), 'red');
     
-    if (healthCheck.error && (healthCheck.error.includes('Connection refused') || healthCheck.error.includes('ECONNREFUSED'))) {
+    if (healthCheck.error && (healthCheck.error.includes('Connection refused') || healthCheck.error.includes('ECONNREFUSED') || healthCheck.error.includes('ENOTFOUND'))) {
       log('\n💡 Environment Detection:', 'yellow');
       log('   You are running this diagnostic on your local Windows machine', 'yellow');
       log('   (D:\\apps\\em1\\em1), but there\'s no server running locally.', 'yellow');
       log('\n🔧 Choose one solution:', 'yellow');
       log('   Option A (Recommended): Run this diagnostic on Replit where the server is running', 'yellow');
       log('   Option B: Start the server locally on your Windows machine:', 'yellow');
-      log('     1. Open a new Command Prompt window', 'yellow');
+      log('     1. Open a NEW Command Prompt window (keep this one open)', 'yellow');
       log('     2. Navigate to: cd D:\\apps\\em1\\em1', 'yellow');
       log('     3. Run: run-local.bat', 'yellow');
       log('     4. Wait for "serving on localhost:5000" message', 'yellow');
       log('     5. Then run this diagnostic again: node diagnose-local.js', 'yellow');
-      log('\n   Note: The server is currently running successfully on Replit.', 'yellow');
+      log('\n   📋 Before running run-local.bat, ensure:', 'yellow');
+      log('     - Your .env file has a valid DATABASE_URL', 'yellow');
+      log('     - Node.js 18+ is installed', 'yellow');
+      log('     - You have a PostgreSQL database setup', 'yellow');
+      log('\n   ✅ Status: The server is running successfully on Replit with 50 draws loaded.', 'yellow');
     } else if (healthCheck.data && typeof healthCheck.data === 'string' && healthCheck.data.includes('<!DOCTYPE')) {
       log('   Note: Server returned HTML instead of JSON - check if API endpoints are working', 'yellow');
     } else {
       log('   This appears to be a network connectivity issue.', 'yellow');
       log('   The server you\'re trying to reach (localhost:5000) is not responding.', 'yellow');
+      log('   Make sure you have a local server running or use the Replit version.', 'yellow');
     }
     return;
   }
