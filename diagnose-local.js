@@ -83,9 +83,10 @@ async function makeRequest(url) {
 
 async function diagnose() {
   log('🔍 EuroMillions Database Diagnostic Tool\n', 'blue');
+  log('📍 Testing connection to: ' + BASE_URL, 'yellow');
   
   // Check if server is running by testing stats endpoint
-  log('1. Checking server connection...', 'blue');
+  log('\n1. Checking server connection...', 'blue');
   const healthCheck = await makeRequest(BASE_URL + '/api/stats');
   
   if (!healthCheck.success) {
@@ -93,11 +94,16 @@ async function diagnose() {
     log('   Error: ' + (healthCheck.error || 'Unknown error'), 'red');
     
     if (healthCheck.error && healthCheck.error.includes('Connection refused')) {
-      log('\n💡 Quick fix:', 'yellow');
-      log('   1. Open a new terminal window', 'yellow');
-      log('   2. Run: run-local.bat', 'yellow');
-      log('   3. Wait for "serving on localhost:5000" message', 'yellow');
-      log('   4. Then run this diagnostic again', 'yellow');
+      log('\n💡 Environment Detection:', 'yellow');
+      log('   You are running this diagnostic on your local Windows machine,', 'yellow');
+      log('   but the server is running on Replit.', 'yellow');
+      log('\n🔧 Choose one solution:', 'yellow');
+      log('   Option A: Run this diagnostic on Replit where the server is running', 'yellow');
+      log('   Option B: Start the server locally:', 'yellow');
+      log('     1. Open a new terminal window', 'yellow');
+      log('     2. Run: run-local.bat', 'yellow');
+      log('     3. Wait for "serving on localhost:5000" message', 'yellow');
+      log('     4. Then run this diagnostic again', 'yellow');
     } else if (healthCheck.data && typeof healthCheck.data === 'string' && healthCheck.data.includes('<!DOCTYPE')) {
       log('   Note: Server returned HTML instead of JSON - check if API endpoints are working', 'yellow');
     }
