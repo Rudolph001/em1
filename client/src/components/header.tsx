@@ -2,6 +2,7 @@ import { useJackpot } from "@/hooks/use-jackpot";
 import { useCountdown } from "@/hooks/use-countdown";
 import { useExchangeRate } from "@/hooks/use-exchange-rate";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CountdownTimer } from "@/components/countdown-timer";
 
 export function Header() {
   const { data: jackpot, isLoading: jackpotLoading } = useJackpot();
@@ -49,15 +50,19 @@ export function Header() {
 
             {/* Next Draw Countdown */}
             <div className="text-center bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20">
-              <div className="text-xs text-purple-200 uppercase tracking-wide font-medium">Next Draw</div>
+              <div className="text-xs text-purple-200 uppercase tracking-wide font-medium mb-1">Next Draw</div>
               {countdownLoading ? (
-                <Skeleton className="h-6 w-20 mb-1 bg-white/20" />
-              ) : (
-                <div className="font-bold text-lg text-orange-400">
-                  {nextDraw ? `${nextDraw.countdown.days}d ${nextDraw.countdown.hours}h ${nextDraw.countdown.minutes}m` : '0d 0h 0m'}
+                <Skeleton className="h-8 w-32 mb-1 bg-white/20" />
+              ) : nextDraw ? (
+                <div className="text-orange-400 scale-75 origin-center">
+                  <CountdownTimer 
+                    targetDate={new Date(nextDraw.nextDrawDate)}
+                  />
                 </div>
+              ) : (
+                <div className="font-bold text-lg text-orange-400">Loading...</div>
               )}
-              <div className="text-sm text-purple-200">
+              <div className="text-xs text-purple-200 mt-1">
                 {nextDraw ? new Date(nextDraw.nextDrawDate).toLocaleDateString('en-US', { 
                   weekday: 'short', 
                   month: 'short', 
