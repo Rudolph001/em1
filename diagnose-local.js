@@ -73,13 +73,16 @@ async function makeRequest(url) {
 async function diagnose() {
   log('🔍 EuroMillions Database Diagnostic Tool\n', 'blue');
   
-  // Check if server is running
+  // Check if server is running by testing stats endpoint
   log('1. Checking server connection...', 'blue');
-  const healthCheck = await makeRequest(BASE_URL + '/api/health');
+  const healthCheck = await makeRequest(BASE_URL + '/api/stats');
   
   if (!healthCheck.success) {
     log('❌ Server not responding. Make sure it\'s running with "npm run dev"', 'red');
-    log('   Error: ' + healthCheck.error, 'red');
+    log('   Error: ' + (healthCheck.error || 'Unknown error'), 'red');
+    if (healthCheck.data && typeof healthCheck.data === 'string' && healthCheck.data.includes('<!DOCTYPE')) {
+      log('   Note: Server returned HTML instead of JSON - check if API endpoints are working', 'yellow');
+    }
     return;
   }
   
