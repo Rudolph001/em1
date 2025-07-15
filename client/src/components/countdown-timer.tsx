@@ -14,7 +14,8 @@ export function CountdownTimer({ targetDate, onComplete }: CountdownTimerProps) 
   });
 
   useEffect(() => {
-    const timer = setInterval(() => {
+    // Calculate initial time immediately
+    const calculateTimeLeft = () => {
       const now = new Date().getTime();
       const target = targetDate.getTime();
       const difference = target - now;
@@ -32,7 +33,13 @@ export function CountdownTimer({ targetDate, onComplete }: CountdownTimerProps) 
           onComplete();
         }
       }
-    }, 1000);
+    };
+
+    // Calculate immediately
+    calculateTimeLeft();
+    
+    // Then update every second
+    const timer = setInterval(calculateTimeLeft, 1000);
 
     return () => clearInterval(timer);
   }, [targetDate, onComplete]);
