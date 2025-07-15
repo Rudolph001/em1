@@ -1,5 +1,4 @@
 
-#!/usr/bin/env node
 /**
  * Diagnostic script for local EuroMillions database
  * Run with: node diagnose-local.js
