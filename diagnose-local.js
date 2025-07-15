@@ -1,10 +1,11 @@
+
 #!/usr/bin/env node
 /**
  * Diagnostic script for local EuroMillions database
  * Run with: node diagnose-local.js
  */
 
-const http = require('http');
+import http from 'http';
 const BASE_URL = 'http://localhost:5000';
 
 // Colors for console output
