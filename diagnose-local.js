@@ -50,11 +50,22 @@ async function makeRequest(url) {
     });
     
     req.on('error', (error) => {
+      let errorMessage = error.message;
+      
+      if (error.code === 'ECONNREFUSED') {
+        errorMessage = 'Connection refused - server is not running';
+      } else if (error.code === 'ENOTFOUND') {
+        errorMessage = 'Server not found - check if localhost:5000 is accessible';
+      } else if (error.code === 'ETIMEDOUT') {
+        errorMessage = 'Connection timeout - server may be starting up';
+      }
+      
       resolve({
         status: 0,
         success: false,
         data: null,
-        error: error.message
+        error: errorMessage,
+        code: error.code
       });
     });
     
@@ -80,7 +91,14 @@ async function diagnose() {
   if (!healthCheck.success) {
     log('❌ Server not responding. Make sure it\'s running with "npm run dev"', 'red');
     log('   Error: ' + (healthCheck.error || 'Unknown error'), 'red');
-    if (healthCheck.data && typeof healthCheck.data === 'string' && healthCheck.data.includes('<!DOCTYPE')) {
+    
+    if (healthCheck.error && healthCheck.error.includes('Connection refused')) {
+      log('\n💡 Quick fix:', 'yellow');
+      log('   1. Open a new terminal window', 'yellow');
+      log('   2. Run: run-local.bat', 'yellow');
+      log('   3. Wait for "serving on localhost:5000" message', 'yellow');
+      log('   4. Then run this diagnostic again', 'yellow');
+    } else if (healthCheck.data && typeof healthCheck.data === 'string' && healthCheck.data.includes('<!DOCTYPE')) {
       log('   Note: Server returned HTML instead of JSON - check if API endpoints are working', 'yellow');
     }
     return;
