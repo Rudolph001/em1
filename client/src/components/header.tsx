@@ -63,13 +63,14 @@ export function Header() {
                 <div className="font-bold text-lg text-orange-400">Loading...</div>
               )}
               <div className="text-xs text-purple-200 mt-1">
-                {nextDraw ? new Date(nextDraw.nextDrawDate).toLocaleDateString('en-US', { 
+                {nextDraw ? new Date(nextDraw.nextDrawDate).toLocaleDateString('en-ZA', { 
                   weekday: 'short', 
                   month: 'short', 
                   day: 'numeric',
                   hour: '2-digit',
-                  minute: '2-digit'
-                }) : 'Loading...'}
+                  minute: '2-digit',
+                  timeZone: 'Africa/Johannesburg'
+                }) + ' SAST' : 'Loading...'}
               </div>
             </div>
 

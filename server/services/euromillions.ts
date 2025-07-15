@@ -266,7 +266,7 @@ export class EuroMillionsService {
     const now = new Date();
     const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
     
-    // EuroMillions draws are on Tuesday (2) and Friday (5) at 8:15 PM GMT
+    // EuroMillions draws are on Tuesday (2) and Friday (5) at 8:15 PM GMT (10:15 PM SAST)
     let nextDrawDate = new Date(now);
     
     if (currentDay === 0 || currentDay === 1) {
@@ -294,7 +294,7 @@ export class EuroMillionsService {
       nextDrawDate.setDate(now.getDate() + 3);
     }
     
-    nextDrawDate.setHours(20, 15, 0, 0); // 8:15 PM GMT
+    nextDrawDate.setHours(20, 15, 0, 0); // 8:15 PM GMT / 10:15 PM SAST
     return nextDrawDate;
   }
   
