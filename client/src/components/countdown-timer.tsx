@@ -38,33 +38,37 @@ export function CountdownTimer({ targetDate, onComplete }: CountdownTimerProps) 
   }, [targetDate, onComplete]);
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center space-x-1">
+      {timeLeft.days > 0 && (
+        <>
+          <div className="text-center">
+            <div className="text-lg font-bold text-current font-mono">
+              {timeLeft.days}
+            </div>
+            <div className="text-xs opacity-70">d</div>
+          </div>
+          <div className="text-current">:</div>
+        </>
+      )}
       <div className="text-center">
-        <div className="text-2xl font-bold text-secondary font-roboto-mono">
-          {timeLeft.days}
-        </div>
-        <div className="text-xs text-gray-500">Days</div>
-      </div>
-      <div className="text-secondary">:</div>
-      <div className="text-center">
-        <div className="text-2xl font-bold text-secondary font-roboto-mono">
+        <div className="text-lg font-bold text-current font-mono">
           {timeLeft.hours.toString().padStart(2, '0')}
         </div>
-        <div className="text-xs text-gray-500">Hours</div>
+        <div className="text-xs opacity-70">h</div>
       </div>
-      <div className="text-secondary">:</div>
+      <div className="text-current">:</div>
       <div className="text-center">
-        <div className="text-2xl font-bold text-secondary font-roboto-mono">
+        <div className="text-lg font-bold text-current font-mono">
           {timeLeft.minutes.toString().padStart(2, '0')}
         </div>
-        <div className="text-xs text-gray-500">Minutes</div>
+        <div className="text-xs opacity-70">m</div>
       </div>
-      <div className="text-secondary">:</div>
+      <div className="text-current">:</div>
       <div className="text-center">
-        <div className="text-2xl font-bold text-secondary font-roboto-mono">
+        <div className="text-lg font-bold text-current font-mono">
           {timeLeft.seconds.toString().padStart(2, '0')}
         </div>
-        <div className="text-xs text-gray-500">Seconds</div>
+        <div className="text-xs opacity-70">s</div>
       </div>
     </div>
   );

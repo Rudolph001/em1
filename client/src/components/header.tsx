@@ -54,7 +54,7 @@ export function Header() {
               {countdownLoading ? (
                 <Skeleton className="h-8 w-32 mb-1 bg-white/20" />
               ) : nextDraw ? (
-                <div className="text-orange-400 scale-75 origin-center">
+                <div className="text-orange-400">
                   <CountdownTimer 
                     targetDate={new Date(nextDraw.nextDrawDate)}
                   />

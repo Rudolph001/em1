@@ -4,6 +4,10 @@ export function useExchangeRate() {
   return useQuery({
     queryKey: ['/api/jackpot'],
     select: (data: any) => data?.exchangeRate,
-    refetchInterval: 5 * 60 * 1000, // Refresh every 5 minutes
+    refetchInterval: 30 * 1000, // Refresh every 30 seconds
+    refetchIntervalInBackground: true,
+    staleTime: 0, // Always consider data stale
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 }
