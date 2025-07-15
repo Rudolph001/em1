@@ -41,6 +41,19 @@ Open a **new terminal** and run:
 node test-local.js
 ```
 
+### 6. If Tests Fail - Use Diagnostics
+If you see API failures (500 errors), run:
+```cmd
+node diagnose-local.js
+```
+
+This will:
+- Check server connection
+- Verify database stats
+- Force data initialization
+- Test all endpoints
+- Provide specific troubleshooting steps
+
 ### 6. Access the Application
 Open your browser: [http://localhost:5000](http://localhost:5000)
 

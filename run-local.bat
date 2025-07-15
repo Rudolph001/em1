@@ -54,6 +54,7 @@ if errorlevel 1 (
 :: Note: API tests will run after server starts
 echo API tests will be available after the server starts
 echo You can run "node test-local.js" in another terminal to test the API
+echo Or run "node diagnose-local.js" for detailed diagnostics
 
 echo.
 echo ==========================================
