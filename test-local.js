@@ -19,6 +19,7 @@ console.log('🧪 EuroMillions App - Local Machine Test\n');
 const BASE_URL = 'http://localhost:5000';
 const TESTS = [
   { name: 'Health Check', url: '/', expectsHTML: true },
+  { name: 'Force Initialize', url: '/api/initialize', expectsJSON: true },
   { name: 'Stats API', url: '/api/stats', expectsJSON: true },
   { name: 'History API', url: '/api/history', expectsJSON: true },
   { name: 'Jackpot API', url: '/api/jackpot', expectsJSON: true },
@@ -228,6 +229,11 @@ async function runTests() {
   results.forEach(result => {
     if (result.success && result.json) {
       switch (result.name) {
+        case 'Force Initialize':
+          if (result.json.stats) {
+            log(`🔄 Initialization complete: ${result.json.stats.drawnCombinations} draws loaded`);
+          }
+          break;
         case 'Stats API':
           log(`📈 ${result.json.drawnCombinations} draws out of ${result.json.totalCombinations.toLocaleString()} combinations`);
           break;

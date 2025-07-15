@@ -24,6 +24,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Check if we already have sufficient data
       const existingHistory = await storage.getDrawHistory(50);
+      console.log(`Found ${existingHistory.length} existing draws in database`);
+      
       if (existingHistory.length >= 20) {
         // Check if we have diverse data (not all the same numbers)
         const uniqueNumberSets = new Set(existingHistory.map(draw => 
@@ -43,12 +45,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           draw.drawDate >= threeMonthsAgo
         );
 
+        console.log(`Data validation: unique sets=${uniqueNumberSets.size}, valid dates=${hasValidDates}, recent data=${hasRecentData}`);
+
         if (uniqueNumberSets.size >= 10 && hasValidDates && hasRecentData) {
           console.log('Sufficient diverse data already exists, skipping initialization');
           dataInitialized = true;
           return;
         } else {
-          console.log(`Existing data check: unique sets=${uniqueNumberSets.size}, valid dates=${hasValidDates}, recent data=${hasRecentData}`);
           console.log('Data appears insufficient or outdated, reinitializing...');
         }
       } else {
@@ -282,6 +285,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error calculating next draw:', error);
       res.status(500).json({ error: "Failed to calculate next draw time" });
+    }
+  });
+
+  // Force data initialization endpoint
+  app.get("/api/initialize", async (req, res) => {
+    try {
+      console.log('Force initialization requested...');
+      resetDataInitialization();
+      await initializeData();
+      
+      const stats = await storage.getStats();
+      const history = await storage.getDrawHistory(5);
+      
+      res.json({
+        message: "Data initialization completed successfully",
+        stats,
+        sampleHistory: history.map(draw => ({
+          date: draw.drawDate,
+          numbers: draw.mainNumbers,
+          stars: draw.luckyStars
+        }))
+      });
+    } catch (error) {
+      console.error('Error during force initialization:', error);
+      res.status(500).json({ 
+        error: "Failed to initialize data",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 

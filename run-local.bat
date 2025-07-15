@@ -58,6 +58,16 @@ if errorlevel 1 (
     echo WARNING: Some tests failed, but continuing...
 )
 
+:: Force data initialization if needed
+echo.
+echo Ensuring data is loaded...
+timeout /t 2 >nul
+echo Checking data initialization...
+curl -s http://localhost:5000/api/initialize >nul 2>&1
+if not errorlevel 1 (
+    echo Data initialization complete
+)
+
 echo.
 echo ==========================================
 echo Setup complete! Starting the application...

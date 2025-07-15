@@ -67,10 +67,22 @@ node test-local.js
 ```
 
 Should show:
-- ✅ All 6 tests passed
+- ✅ All 7 tests passed
+- 🔄 Initialization complete: 51 draws loaded
 - 📈 51 historical draws loaded
 - 💰 Current jackpot: €97 million
 - ⏰ Countdown to next draw
+
+### If No Historical Data Shows:
+Force data initialization by visiting:
+```
+http://localhost:5000/api/initialize
+```
+
+Or use curl:
+```bash
+curl http://localhost:5000/api/initialize
+```
 
 ## Expected Results
 
@@ -92,6 +104,7 @@ Open in browser: **http://localhost:5000**
 - Verify credentials
 
 ### No Historical Data
+- Visit `http://localhost:5000/api/initialize` to force data loading
 - Run `npm run db:push` to create tables
 - Restart application to trigger data loading
 - Check console logs for errors
