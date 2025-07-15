@@ -51,22 +51,9 @@ if errorlevel 1 (
     exit /b 1
 )
 
-:: Test the setup
-echo Testing setup...
-node test-local.js
-if errorlevel 1 (
-    echo WARNING: Some tests failed, but continuing...
-)
-
-:: Force data initialization if needed
-echo.
-echo Ensuring data is loaded...
-timeout /t 2 >nul
-echo Checking data initialization...
-curl -s http://localhost:5000/api/initialize >nul 2>&1
-if not errorlevel 1 (
-    echo Data initialization complete
-)
+:: Note: API tests will run after server starts
+echo API tests will be available after the server starts
+echo You can run "node test-local.js" in another terminal to test the API
 
 echo.
 echo ==========================================
@@ -77,5 +64,6 @@ echo Press Ctrl+C to stop the server
 echo ==========================================
 echo.
 
-:: Start the application
-call npm run dev
+:: Start the application with Windows-compatible environment variable
+set NODE_ENV=development
+call npx tsx server/index.ts

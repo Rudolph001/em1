@@ -17,8 +17,20 @@ This will automatically:
 ```batch
 npm install
 npm run db:push
-npm run dev
+set NODE_ENV=development
+npx tsx server/index.ts
 ```
+
+### Option 3: Testing (run in separate terminal)
+```batch
+node test-local.js
+```
+OR
+```batch
+test-windows.bat
+```
+
+**Windows Note**: If you see `NODE_ENV is not recognized`, use `set NODE_ENV=development` instead of `NODE_ENV=development`.
 
 ## For Mac/Linux Users
 

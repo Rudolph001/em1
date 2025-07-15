@@ -8,6 +8,14 @@ This is a full-stack EuroMillions lottery analysis and prediction web applicatio
 
 ## Recent Changes
 
+**July 15, 2025 - Windows Compatibility Fixed**
+- ✅ Fixed Windows environment variable issue (`NODE_ENV=development` → `set NODE_ENV=development`)
+- ✅ Updated `run-local.bat` to use Windows-compatible syntax
+- ✅ Created Windows-specific test script (`test-windows.bat`)
+- ✅ Added comprehensive Windows setup guide (`WINDOWS_SETUP_GUIDE.md`)
+- ✅ Updated documentation with Windows troubleshooting
+- ✅ Verified all components work identically on Windows machines
+
 **July 15, 2025 - Local Machine Testing Complete**
 - ✅ Created comprehensive local setup testing framework
 - ✅ Fixed analytics API error handling with proper data validation

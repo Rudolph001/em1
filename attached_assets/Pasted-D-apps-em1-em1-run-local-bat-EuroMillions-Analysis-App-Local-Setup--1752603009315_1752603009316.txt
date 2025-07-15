@@ -1,0 +1,86 @@
+D:\apps\em1\em1>run-local.bat
+EuroMillions Analysis App - Local Setup
+==========================================
+Installing dependencies...
+
+up to date, audited 515 packages in 3s
+
+72 packages are looking for funding
+  run `npm fund` for details
+
+9 vulnerabilities (1 low, 8 moderate)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+Setting up database schema...
+
+> rest-express@1.0.0 db:push
+> drizzle-kit push
+
+No config path provided, using default 'drizzle.config.ts'
+Reading config file 'D:\apps\em1\em1\drizzle.config.ts'
+Using 'pg' driver for database querying
+[✓] Pulling schema from database...
+[i] No changes detected
+Testing setup...
+🧪 EuroMillions App - Local Machine Test
+
+🚀 Starting EuroMillions App Tests
+
+📁 Checking project files...
+✅ package.json
+✅ server/index.ts
+✅ client/src/App.tsx
+✅ shared/schema.ts
+✅ .env
+
+🔧 Checking environment...
+✅ DATABASE_URL configured
+
+🌐 Testing API endpoints...
+Testing Health Check... ❌ FAIL
+   Status: undefined
+Testing Force Initialize... ❌ FAIL
+   Status: undefined
+Testing Stats API... ❌ FAIL
+   Status: undefined
+Testing History API... ❌ FAIL
+   Status: undefined
+Testing Jackpot API... ❌ FAIL
+   Status: undefined
+Testing Next Draw API... ❌ FAIL
+   Status: undefined
+Testing Analytics API... ❌ FAIL
+   Status: undefined
+
+📊 Test Results:
+✅ Passed: 0
+❌ Failed: 7
+
+📋 Detailed Results:
+
+⚠️  Some tests failed. Check the server logs and fix the issues.
+
+💡 Tip: Make sure the server is running with "npm run dev"
+
+Ensuring data is loaded...
+Checking data initialization...
+
+==========================================
+Setup complete! Starting the application...
+
+Application will be available at: http://localhost:5000
+Press Ctrl+C to stop the server
+==========================================
+
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+'NODE_ENV' is not recognized as an internal or external command,
+operable program or batch file.
