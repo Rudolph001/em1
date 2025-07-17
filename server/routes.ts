@@ -178,12 +178,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Generate initial prediction
-      const predictionPositions = historicalDraws.map(draw => 
-        CombinationsService.calculatePosition(draw.numbers, draw.stars)
-      );
-
-      const prediction = await PredictionService.generatePrediction(predictionPositions);
+      // Generate initial prediction using new advanced model
+      const prediction = await PredictionService.generatePrediction(drawsToProcess);
       await storage.createPrediction({
         drawDate: EuroMillionsService.getNextDrawDate(),
         mainNumbers: prediction.mainNumbers,
@@ -498,17 +494,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get current prediction
+  // Get current prediction using advanced model
   app.get("/api/prediction", async (req, res) => {
     try {
       await initializeData();
       let prediction = await storage.getLatestPrediction();
 
-      // If no prediction exists or it's missing new fields, generate a new one
-      if (!prediction || !prediction.reasoning || !prediction.historicalDataPoints) {
-        const history = await storage.getDrawHistory();
-        const positions = history.map(draw => draw.position);
-        const newPrediction = await PredictionService.generatePrediction(positions);
+      // Check if prediction needs refresh (older than 1 day or different model version)
+      const needsRefresh = !prediction || 
+        (new Date().getTime() - new Date(prediction.createdAt || 0).getTime()) > 24 * 60 * 60 * 1000 ||
+        prediction.modelVersion !== 'v3.0.0-advanced';
+
+      if (needsRefresh) {
+        console.log('Generating new advanced prediction...');
+        // Generate new prediction using advanced model with actual draw data
+        const history = await storage.getDrawHistory(30); // Use last 30 draws for better analysis
+        const newPrediction = await PredictionService.generatePrediction(history);
 
         prediction = await storage.createPrediction({
           drawDate: EuroMillionsService.getNextDrawDate(),
@@ -522,7 +523,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      res.json(prediction);
+      res.json({
+        ...prediction,
+        nextDrawDate: EuroMillionsService.getNextDrawDate(),
+        modelInfo: {
+          version: 'v3.0.0-advanced',
+          methods: ['Hot/Cold Balance', 'Statistical Model', 'Gap Patterns', 'Sequence Analysis', 'Temporal Patterns'],
+          dataPoints: prediction.historicalDataPoints || 0,
+          lastUpdated: prediction.createdAt || new Date()
+        }
+      });
     } catch (error) {
       console.error('Error fetching prediction:', error);
       res.status(500).json({ error: "Failed to fetch prediction" });

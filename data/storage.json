@@ -1810,6 +1810,27 @@
       "reasoning": "Multi-method ensemble: Frequency analysis balancing cold and warm numbers. Method agreement: 18%",
       "historicalDataPoints": 51,
       "createdAt": "2025-07-17T23:42:05.887Z"
+    },
+    {
+      "id": 2,
+      "drawDate": "2025-07-18T20:15:00.000Z",
+      "mainNumbers": [
+        11,
+        12,
+        26,
+        45,
+        49
+      ],
+      "luckyStars": [
+        2,
+        4
+      ],
+      "position": 96409645,
+      "confidence": 0.6464000000000001,
+      "modelVersion": "v3.0.0-advanced",
+      "reasoning": "Ensemble prediction (5 methods): Hot/Cold balance: 49,45 (hot), 11,26 (cold), 42 (overdue)",
+      "historicalDataPoints": 30,
+      "createdAt": "2025-07-17T23:52:47.052Z"
     }
   ],
   "jackpotData": [
@@ -1994,6 +2015,62 @@
       "amountZar": 3417510931.5,
       "exchangeRate": 20.75,
       "updatedAt": "2025-07-17T23:49:38.498Z"
+    },
+    {
+      "id": 27,
+      "amountEur": 164699322,
+      "amountZar": 3417510931.5,
+      "exchangeRate": 20.75,
+      "updatedAt": "2025-07-17T23:50:10.950Z"
+    },
+    {
+      "id": 28,
+      "amountEur": 164699322,
+      "amountZar": 3417510931.5,
+      "exchangeRate": 20.75,
+      "updatedAt": "2025-07-17T23:50:27.308Z"
+    },
+    {
+      "id": 29,
+      "amountEur": 164699322,
+      "amountZar": 3417510931.5,
+      "exchangeRate": 20.75,
+      "updatedAt": "2025-07-17T23:50:59.406Z"
+    },
+    {
+      "id": 30,
+      "amountEur": 164699322,
+      "amountZar": 3417510931.5,
+      "exchangeRate": 20.75,
+      "updatedAt": "2025-07-17T23:50:59.469Z"
+    },
+    {
+      "id": 31,
+      "amountEur": 164699322,
+      "amountZar": 3417510931.5,
+      "exchangeRate": 20.75,
+      "updatedAt": "2025-07-17T23:51:31.670Z"
+    },
+    {
+      "id": 32,
+      "amountEur": 164699322,
+      "amountZar": 3417510931.5,
+      "exchangeRate": 20.75,
+      "updatedAt": "2025-07-17T23:52:04.069Z"
+    },
+    {
+      "id": 33,
+      "amountEur": 164699322,
+      "amountZar": 3417510931.5,
+      "exchangeRate": 20.75,
+      "updatedAt": "2025-07-17T23:52:36.244Z"
+    },
+    {
+      "id": 34,
+      "amountEur": 164699322,
+      "amountZar": 3417510931.5,
+      "exchangeRate": 20.75,
+      "updatedAt": "2025-07-17T23:52:51.992Z"
     }
   ]
 }
