@@ -1910,6 +1910,90 @@
       "amountZar": 2012750000,
       "exchangeRate": 20.75,
       "updatedAt": "2025-07-17T23:46:08.653Z"
+    },
+    {
+      "id": 15,
+      "amountEur": 97000000,
+      "amountZar": 2012750000,
+      "exchangeRate": 20.75,
+      "updatedAt": "2025-07-17T23:46:37.905Z"
+    },
+    {
+      "id": 16,
+      "amountEur": 97000000,
+      "amountZar": 2012750000,
+      "exchangeRate": 20.75,
+      "updatedAt": "2025-07-17T23:46:42.673Z"
+    },
+    {
+      "id": 17,
+      "amountEur": 97000000,
+      "amountZar": 2012750000,
+      "exchangeRate": 20.75,
+      "updatedAt": "2025-07-17T23:47:12.978Z"
+    },
+    {
+      "id": 18,
+      "amountEur": 97000000,
+      "amountZar": 2012750000,
+      "exchangeRate": 20.75,
+      "updatedAt": "2025-07-17T23:47:43.288Z"
+    },
+    {
+      "id": 19,
+      "amountEur": 97000000,
+      "amountZar": 2012750000,
+      "exchangeRate": 20.75,
+      "updatedAt": "2025-07-17T23:48:03.591Z"
+    },
+    {
+      "id": 20,
+      "amountEur": 97000000,
+      "amountZar": 2012750000,
+      "exchangeRate": 20.75,
+      "updatedAt": "2025-07-17T23:48:14.535Z"
+    },
+    {
+      "id": 21,
+      "amountEur": 97000000,
+      "amountZar": 2012750000,
+      "exchangeRate": 20.75,
+      "updatedAt": "2025-07-17T23:48:22.014Z"
+    },
+    {
+      "id": 22,
+      "amountEur": 97000000,
+      "amountZar": 2012750000,
+      "exchangeRate": 20.75,
+      "updatedAt": "2025-07-17T23:48:52.325Z"
+    },
+    {
+      "id": 23,
+      "amountEur": 164699322,
+      "amountZar": 3417510931.5,
+      "exchangeRate": 20.75,
+      "updatedAt": "2025-07-17T23:49:05.454Z"
+    },
+    {
+      "id": 24,
+      "amountEur": 164699322,
+      "amountZar": 3417510931.5,
+      "exchangeRate": 20.75,
+      "updatedAt": "2025-07-17T23:49:05.882Z"
+    },
+    {
+      "id": 25,
+      "amountEur": 164699322,
+      "amountZar": 3417510931.5,
+      "exchangeRate": 20.75,
+      "updatedAt": "2025-07-17T23:49:14.094Z"
+    },
+    {
+      "id": 26,
+      "amountEur": 164699322,
+      "amountZar": 3417510931.5,
+      "exchangeRate": 20.75,
+      "updatedAt": "2025-07-17T23:49:38.498Z"
     }
   ]
 }

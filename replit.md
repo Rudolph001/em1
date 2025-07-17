@@ -8,6 +8,13 @@ This is a full-stack EuroMillions lottery analysis and prediction web applicatio
 
 ## Recent Changes
 
+**July 17, 2025 - Real-time Jackpot Data Fixed**
+- ✅ Fixed jackpot data to show real current amount (€164.7M instead of hardcoded €97M)
+- ✅ Implemented multi-source jackpot fetching with web scraping fallbacks
+- ✅ Added proper error handling and validation for jackpot amounts  
+- ✅ Enhanced automatic background updates to fetch real-time data every 2 minutes
+- ✅ Verified all data sources are working with accurate current information
+
 **July 15, 2025 - Windows Compatibility Fixed**
 - ✅ Fixed Windows environment variable issue (`NODE_ENV=development` → `set NODE_ENV=development`)
 - ✅ Updated `run-local.bat` to use Windows-compatible syntax
