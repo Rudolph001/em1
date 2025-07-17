@@ -8,16 +8,24 @@ import { CombinationsService } from "./services/combinations";
 import { insertDrawHistorySchema, insertPredictionSchema, insertJackpotDataSchema } from "@shared/schema";
 
 let dataInitialized = false;
+let lastDataCheck = 0;
+const DATA_CHECK_INTERVAL = 5 * 60 * 1000; // Check for new data every 5 minutes
 
 // Reset initialization flag to force re-initialization
 const resetDataInitialization = () => {
   dataInitialized = false;
+  lastDataCheck = 0;
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Initialize data on first request
-  async function initializeData() {
-    if (dataInitialized) return;
+  // Initialize data and check for updates
+  async function initializeData(forceUpdate = false) {
+    const now = Date.now();
+    
+    // Check if we need to update data
+    if (dataInitialized && !forceUpdate && (now - lastDataCheck) < DATA_CHECK_INTERVAL) {
+      return;
+    }
 
     try {
       console.log('Initializing EuroMillions data...');
@@ -47,12 +55,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         console.log(`Data validation: unique sets=${uniqueNumberSets.size}, valid dates=${hasValidDates}, recent data=${hasRecentData}`);
 
-        if (uniqueNumberSets.size >= 10 && hasValidDates && hasRecentData) {
+        // Always check for new data if enough time has passed
+        if (uniqueNumberSets.size >= 10 && hasValidDates && hasRecentData && !forceUpdate && (now - lastDataCheck) < DATA_CHECK_INTERVAL) {
           console.log('Sufficient diverse data already exists, skipping initialization');
           dataInitialized = true;
+          lastDataCheck = now;
           return;
         } else {
-          console.log('Data appears insufficient or outdated, reinitializing...');
+          console.log('Checking for updated data or reinitializing...');
         }
       } else {
         console.log(`Only ${existingHistory.length} draws found, need at least 20 for initialization`);
@@ -85,23 +95,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Using database storage - data persistence handled by database
 
-      // Check if we already have this data to prevent re-initialization
-      const existingDraws = await storage.getDrawHistory(uniqueDraws.length);
-      if (existingDraws.length > 0) {
-        // Check if the latest draw matches to avoid duplicate initialization
+      // Check for new draws since last update
+      const existingDraws = await storage.getDrawHistory(10);
+      let hasNewData = false;
+      
+      if (existingDraws.length > 0 && uniqueDraws.length > 0) {
         const latestExisting = existingDraws[0];
         const latestNew = uniqueDraws[0];
-        if (latestExisting.drawDate.toISOString().split('T')[0] === latestNew.date) {
+        
+        // Compare dates to see if we have new data
+        const existingDate = latestExisting.drawDate.toISOString().split('T')[0];
+        const newDate = latestNew.date;
+        
+        if (existingDate !== newDate) {
+          console.log(`New data detected: existing latest ${existingDate}, new latest ${newDate}`);
+          hasNewData = true;
+        } else if (!forceUpdate) {
           console.log('Data already up to date, skipping re-initialization');
           dataInitialized = true;
+          lastDataCheck = now;
           return;
         }
+      } else {
+        hasNewData = true;
       }
 
       const positions: number[] = [];
       let previousPosition = 0;
 
-      for (const draw of uniqueDraws) {
+      // Process only new draws if we have existing data
+      const drawsToProcess = hasNewData && existingDraws.length > 0 
+        ? uniqueDraws.filter(draw => {
+            const drawDate = new Date(draw.date);
+            return !existingDraws.some(existing => 
+              existing.drawDate.toISOString().split('T')[0] === draw.date
+            );
+          })
+        : uniqueDraws;
+
+      console.log(`Processing ${drawsToProcess.length} draws (${hasNewData ? 'new data' : 'full initialization'})`);
+
+      for (const draw of drawsToProcess) {
         // Check if this exact draw already exists
         const existingDraw = await storage.getDrawByDate(new Date(draw.date));
         if (existingDraw) {
@@ -174,6 +208,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       dataInitialized = true;
+      lastDataCheck = now;
       console.log('Data initialization complete');
     } catch (error) {
       console.error('Error initializing data:', error);
@@ -394,6 +429,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching combination:', error);
       res.status(500).json({ error: "Failed to fetch combination" });
+    }
+  });
+
+  // Force refresh data endpoint
+  app.post("/api/refresh-data", async (req, res) => {
+    try {
+      console.log('Manual data refresh requested...');
+      resetDataInitialization();
+      await initializeData(true);
+      
+      const stats = await storage.getStats();
+      const history = await storage.getDrawHistory(5);
+      
+      res.json({
+        message: "Data refresh completed successfully",
+        stats,
+        sampleHistory: history.map(draw => ({
+          date: draw.drawDate,
+          numbers: draw.mainNumbers,
+          stars: draw.luckyStars
+        }))
+      });
+    } catch (error) {
+      console.error('Error during manual refresh:', error);
+      res.status(500).json({ 
+        error: "Failed to refresh data",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 
