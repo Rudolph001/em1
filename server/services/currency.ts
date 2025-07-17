@@ -8,7 +8,7 @@ export class CurrencyService {
   private static readonly FALLBACK_API_URL = 'https://api.fxaccess.com/latest/EUR';
   private static cachedRate: { rate: number; timestamp: number } | null = null;
   private static readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-  private static readonly FALLBACK_RATE = 20.96; // Approximate EUR to ZAR rate as fallback
+  private static readonly FALLBACK_RATE = 20.74; // Current EUR to ZAR rate as of July 17, 2025
 
   /**
    * Get EUR to ZAR exchange rate with caching and fallback
