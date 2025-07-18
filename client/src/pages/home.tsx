@@ -23,7 +23,7 @@ export default function Home() {
 
         <div className="bg-white rounded-lg shadow-lg mt-8">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-4 bg-transparent border-b border-gray-200 rounded-none">
+            <TabsList className="grid w-full grid-cols-6 bg-transparent border-b border-gray-200 rounded-none">
               <TabsTrigger 
                 value="search" 
                 className="flex items-center gap-2 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary rounded-none py-4"
@@ -37,6 +37,20 @@ export default function Home() {
               >
                 <i className="fas fa-crystal-ball" />
                 AI Predictions
+              </TabsTrigger>
+              <TabsTrigger 
+                value="prize-breakdown" 
+                className="flex items-center gap-2 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary rounded-none py-4"
+              >
+                <i className="fas fa-trophy" />
+                Prize Breakdown
+              </TabsTrigger>
+              <TabsTrigger 
+                value="my-tickets" 
+                className="flex items-center gap-2 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary rounded-none py-4"
+              >
+                <i className="fas fa-ticket-alt" />
+                My Tickets
               </TabsTrigger>
               <TabsTrigger 
                 value="history" 
@@ -60,6 +74,14 @@ export default function Home() {
 
             <TabsContent value="predictions" className="p-6">
               <PredictionsTab />
+            </TabsContent>
+
+            <TabsContent value="prize-breakdown" className="p-6">
+              <PrizeBreakdownTab />
+            </TabsContent>
+
+            <TabsContent value="my-tickets" className="p-6">
+              <TicketsTab />
             </TabsContent>
 
             <TabsContent value="history" className="p-6">

@@ -2848,6 +2848,69 @@
       "amountZar": 2297700000,
       "exchangeRate": 20.7,
       "updatedAt": "2025-07-18T00:50:54.656Z"
+    },
+    {
+      "id": 146,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:51:06.496Z"
+    },
+    {
+      "id": 147,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:51:38.711Z"
+    },
+    {
+      "id": 148,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:52:11.070Z"
+    },
+    {
+      "id": 149,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:52:19.770Z"
+    },
+    {
+      "id": 150,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:52:43.442Z"
+    },
+    {
+      "id": 151,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:52:51.245Z"
+    },
+    {
+      "id": 152,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:52:51.991Z"
+    },
+    {
+      "id": 153,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:53:16.293Z"
+    },
+    {
+      "id": 154,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:53:31.229Z"
     }
   ]
 }

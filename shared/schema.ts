@@ -50,6 +50,37 @@ export const jackpotData = pgTable("jackpot_data", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const tickets = pgTable("tickets", {
+  id: serial("id").primaryKey(),
+  mainNumbers: jsonb("main_numbers").$type<number[]>().notNull(),
+  luckyStars: jsonb("lucky_stars").$type<number[]>().notNull(),
+  predictionMethod: text("prediction_method").notNull(),
+  confidence: real("confidence").notNull(),
+  drawDate: timestamp("draw_date").notNull(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  // Result tracking
+  wasChecked: boolean("was_checked").default(false),
+  mainMatches: integer("main_matches"),
+  starMatches: integer("star_matches"),
+  totalMatches: integer("total_matches"),
+  prizeAmount: real("prize_amount"),
+  prizeAmountZar: real("prize_amount_zar"),
+  prizeTier: text("prize_tier"),
+});
+
+export const prizeBreakdown = pgTable("prize_breakdown", {
+  id: serial("id").primaryKey(),
+  drawDate: timestamp("draw_date").notNull(),
+  tier: text("tier").notNull(),
+  description: text("description").notNull(),
+  winners: integer("winners").notNull(),
+  prizeEur: real("prize_eur").notNull(),
+  prizeZar: real("prize_zar").notNull(),
+  exchangeRate: real("exchange_rate").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -73,34 +104,27 @@ export const insertJackpotDataSchema = z.object({
   exchangeRate: z.number().positive(),
 });
 
-export const insertTicketSchema = z.object({
-  mainNumbers: z.array(z.number().min(1).max(50)).length(5),
-  luckyStars: z.array(z.number().min(1).max(12)).length(2),
-  predictionMethod: z.string(),
-  confidence: z.number().min(0).max(1),
-  drawDate: z.date(),
-  isActive: z.boolean(),
+export const insertTicketSchema = createInsertSchema(tickets).omit({
+  id: true,
+  wasChecked: true,
+  mainMatches: true,
+  starMatches: true,
+  totalMatches: true,
+  prizeAmount: true,
+  prizeAmountZar: true,
+  prizeTier: true,
 });
 
-export const insertTicketResultSchema = z.object({
-  ticketId: z.number().positive(),
-  drawResult: z.object({
-    mainNumbers: z.array(z.number().min(1).max(50)).length(5),
-    luckyStars: z.array(z.number().min(1).max(12)).length(2),
-    drawDate: z.string(),
-  }),
-  matches: z.object({
-    mainMatches: z.number().min(0).max(5),
-    starMatches: z.number().min(0).max(2),
-    totalMatches: z.number().min(0).max(7),
-    prizeAmount: z.number().min(0),
-    prizeAmountZar: z.number().min(0),
-    tier: z.string(),
-  }),
+export const insertPrizeBreakdownSchema = createInsertSchema(prizeBreakdown).omit({
+  id: true,
 });
 
 export type User = typeof users.$inferSelect;
+export type Ticket = typeof tickets.$inferSelect;
+export type PrizeBreakdown = typeof prizeBreakdown.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type InsertTicket = z.infer<typeof insertTicketSchema>;
+export type InsertPrizeBreakdown = z.infer<typeof insertPrizeBreakdownSchema>;
 export type EuroMillionsCombination = typeof euroMillionsCombinations.$inferSelect;
 export type InsertEuroMillionsCombination = z.infer<typeof insertCombinationSchema>;
 export type DrawHistory = typeof drawHistory.$inferSelect;
