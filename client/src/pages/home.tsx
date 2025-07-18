@@ -7,6 +7,7 @@ import { PredictionsTab } from "@/components/predictions-tab";
 import { HistoryTab } from "@/components/history-tab";
 import { AnalyticsTab } from "@/components/analytics-tab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PrizeBreakdownTab } from "@/components/prize-breakdown-tab";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("search");

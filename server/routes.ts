@@ -760,6 +760,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get latest prize breakdown
+  app.get("/api/prize-breakdown", async (req, res) => {
+    try {
+      // Disable caching for real-time data
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+
+      const prizeData = await EuroMillionsService.getPrizeBreakdown();
+      
+      if (!prizeData) {
+        return res.status(503).json({ 
+          error: "Prize breakdown data temporarily unavailable",
+          message: "Please try again later"
+        });
+      }
+
+      res.json(prizeData);
+    } catch (error) {
+      console.error('Error fetching prize breakdown:', error);
+      res.status(500).json({ 
+        error: "Failed to fetch prize breakdown",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Reset and reinitialize data
   app.post("/api/reset", async (req, res) => {
     try {
