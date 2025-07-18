@@ -46,6 +46,11 @@ export function Header() {
                   {jackpot ? formatCurrency(jackpot.amountZar, 'ZAR') : 'R0'}
                 </div>
               )}
+              {jackpot && !jackpotLoading && (
+                <div className="text-xs text-purple-300 mt-1">
+                  10%: {formatCurrency(jackpot.amountZar * 0.1, 'ZAR')}
+                </div>
+              )}
             </div>
 
             {/* Next Draw Countdown */}
