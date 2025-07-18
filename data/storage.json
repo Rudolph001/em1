@@ -2911,6 +2911,239 @@
       "amountZar": 2297700000,
       "exchangeRate": 20.7,
       "updatedAt": "2025-07-18T00:53:31.229Z"
+    },
+    {
+      "id": 155,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:53:47.806Z"
+    },
+    {
+      "id": 156,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:53:56.391Z"
+    },
+    {
+      "id": 157,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:54:20.465Z"
+    },
+    {
+      "id": 158,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:54:28.598Z"
+    },
+    {
+      "id": 159,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:54:54.168Z"
+    },
+    {
+      "id": 160,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:55:01.391Z"
+    },
+    {
+      "id": 161,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:55:26.412Z"
+    },
+    {
+      "id": 162,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:55:34.393Z"
+    },
+    {
+      "id": 163,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:55:40.814Z"
+    },
+    {
+      "id": 164,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:55:41.481Z"
+    },
+    {
+      "id": 165,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:55:59.260Z"
+    },
+    {
+      "id": 166,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:56:13.768Z"
+    },
+    {
+      "id": 167,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:56:22.505Z"
+    },
+    {
+      "id": 168,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:56:46.402Z"
+    }
+  ],
+  "tickets": [
+    {
+      "id": 1,
+      "mainNumbers": [
+        41,
+        42,
+        46,
+        48,
+        49
+      ],
+      "luckyStars": [
+        8,
+        11
+      ],
+      "predictionMethod": "Enhanced Frequency Analysis",
+      "confidence": 0.8193697402189385,
+      "drawDate": "2025-07-18T20:15:00.000Z",
+      "isActive": true,
+      "createdAt": "2025-07-18T00:54:22.455Z"
+    },
+    {
+      "id": 2,
+      "mainNumbers": [
+        46,
+        47,
+        48,
+        49,
+        50
+      ],
+      "luckyStars": [
+        11,
+        12
+      ],
+      "predictionMethod": "Enhanced Gap Analysis",
+      "confidence": 0.8123533059905866,
+      "drawDate": "2025-07-18T20:15:00.000Z",
+      "isActive": true,
+      "createdAt": "2025-07-18T00:54:22.456Z"
+    },
+    {
+      "id": 3,
+      "mainNumbers": [
+        5,
+        13,
+        20,
+        21,
+        35
+      ],
+      "luckyStars": [
+        3,
+        4
+      ],
+      "predictionMethod": "Deviation Analysis",
+      "confidence": 0.6094603329760718,
+      "drawDate": "2025-07-18T20:15:00.000Z",
+      "isActive": true,
+      "createdAt": "2025-07-18T00:54:22.459Z"
+    },
+    {
+      "id": 4,
+      "mainNumbers": [
+        5,
+        18,
+        21,
+        43,
+        47
+      ],
+      "luckyStars": [
+        1,
+        3
+      ],
+      "predictionMethod": "Markov Chain",
+      "confidence": 0.5950000000000001,
+      "drawDate": "2025-07-18T20:15:00.000Z",
+      "isActive": true,
+      "createdAt": "2025-07-18T00:54:22.461Z"
+    },
+    {
+      "id": 5,
+      "mainNumbers": [
+        8,
+        9,
+        19,
+        23,
+        29
+      ],
+      "luckyStars": [
+        1,
+        3
+      ],
+      "predictionMethod": "Hot Numbers",
+      "confidence": 0.517,
+      "drawDate": "2025-07-18T20:15:00.000Z",
+      "isActive": true,
+      "createdAt": "2025-07-18T00:54:22.463Z"
+    },
+    {
+      "id": 6,
+      "mainNumbers": [
+        6,
+        13,
+        33,
+        40,
+        44
+      ],
+      "luckyStars": [
+        2,
+        3
+      ],
+      "predictionMethod": "Neural Network Style",
+      "confidence": 0.4864521137184302,
+      "drawDate": "2025-07-18T20:15:00.000Z",
+      "isActive": true,
+      "createdAt": "2025-07-18T00:54:22.465Z"
+    },
+    {
+      "id": 7,
+      "mainNumbers": [
+        11,
+        12,
+        26,
+        45,
+        49
+      ],
+      "luckyStars": [
+        2,
+        4
+      ],
+      "predictionMethod": "Advanced AI Prediction v3.0",
+      "confidence": 0.6464,
+      "drawDate": "2025-07-18T20:15:00.000Z",
+      "isActive": true,
+      "createdAt": "2025-07-18T00:56:20.827Z"
     }
   ]
 }
