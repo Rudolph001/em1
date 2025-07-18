@@ -853,8 +853,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (currentJackpot && exchangeRate) {
         await storage.createJackpotData({
-          amountEur: currentJackpot,
-          amountZar: currentJackpot * exchangeRate.rate,
+          amountEur: currentRate,
           exchangeRate: exchangeRate.rate
         });
       }
@@ -865,123 +864,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to update data" });
     }
   });
-
-  const httpServer = createServer(app);
-
-  // Schedule periodic updates
-  setInterval(async () => {
-    try {
-      // Update jackpot and exchange rate every 2 minutes
-      const currentJackpot = await EuroMillionsService.getCurrentJackpot();
-      const exchangeRate = await CurrencyService.getEurToZarRate();
-
-      if (currentJackpot && exchangeRate) {
-        await storage.createJackpotData({
-          amountEur: currentJackpot,
-          amountZar: currentJackpot * exchangeRate.rate,
-          exchangeRate: exchangeRate.rate
-        });
-      }
-    } catch (error) {
-      console.error('Error in scheduled update:', error);
-    }
-  }, 2 * 60 * 1000); // 2 minutes
-
-  // Schedule automatic draw result checks
-  // Check every 10 minutes on draw days (Tuesday/Friday) after 8:30 PM GMT
-  setInterval(async () => {
-    try {
-      const now = new Date();
-      const currentDay = now.getDay(); // 0 = Sunday, 2 = Tuesday, 5 = Friday
-      const currentHour = now.getUTCHours();
-      const currentMinute = now.getUTCMinutes();
-
-      // Only check on draw days (Tuesday or Friday) after 8:30 PM GMT
-      if ((currentDay === 2 || currentDay === 5) && 
-          (currentHour > 20 || (currentHour === 20 && currentMinute >= 30))) {
-
-        console.log('Checking for new draw results...');
-
-        // Get the latest draw from our database
-        const latestStoredDraw = await storage.getLatestDraw();
-
-        // Fetch the latest draw from the API
-        const latestApiDraw = await EuroMillionsService.getLatestDraw();
-
-        if (latestApiDraw && latestStoredDraw) {
-          const apiDrawDate = new Date(latestApiDraw.date).toISOString().split('T')[0];
-          const storedDrawDate = latestStoredDraw.drawDate.toISOString().split('T')[0];
-
-          // If we found a newer draw, add it to our database
-          if (apiDrawDate > storedDrawDate) {
-            console.log(`New draw found for ${apiDrawDate}, adding to database...`);
-
-            const position = CombinationsService.calculatePosition(latestApiDraw.numbers, latestApiDraw.stars);
-            const gapFromPrevious = position - latestStoredDraw.position;
-
-            await storage.createDrawHistory({
-              drawDate: new Date(latestApiDraw.date),
-              mainNumbers: latestApiDraw.numbers,
-              luckyStars: latestApiDraw.stars,
-              position,
-              jackpotEur: latestApiDraw.jackpot || 0,
-              jackpotZar: latestApiDraw.jackpot ? await CurrencyService.convertEurToZar(latestApiDraw.jackpot) || 0 : 0,
-              gapFromPrevious
-            });
-
-            // Mark combination as drawn
-            const sortedNumbers = [...latestApiDraw.numbers].sort((a, b) => a - b);
-            const sortedStars = [...latestApiDraw.stars].sort((a, b) => a - b);
-
-            await storage.createCombination({
-              position,
-              mainNumbers: sortedNumbers,
-              luckyStars: sortedStars,
-              hasBeenDrawn: true,
-              lastDrawnDate: new Date(latestApiDraw.date)
-            });
-
-            // Generate new prediction based on updated data
-            const history = await storage.getDrawHistory();
-            const positions = history.map(draw => draw.position);
-            const newPrediction = await PredictionService.generatePrediction(positions);
-
-            await storage.createPrediction({
-              drawDate: EuroMillionsService.getNextDrawDate(),
-              mainNumbers: newPrediction.mainNumbers,
-              luckyStars: newPrediction.luckyStars,
-              position: newPrediction.position,
-              confidence: newPrediction.confidence,
-              modelVersion: newPrediction.modelVersion
-            });
-
-            console.log(`Successfully added new draw and updated prediction`);
-          } else {
-            console.log('No new draws found');
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error checking for new draws:', error);
-    }
-  }, 10 * 60 * 1000); // Check every 10 minutes
-
-  return httpServer;
-}
-</previous_generation>
-Rate,
-          exchangeRate: exchangeRate.rate
-        });
-      }
-
-      res.json({ message: "Data updated successfully" });
-    } catch (error) {
-      console.error('Error updating data:', error);
-      res.status(500).json({ error: "Failed to update data" });
-    }
-  });
-
-  const httpServer = createServer(app);
 
   // Schedule periodic updates
   setInterval(async () => {
