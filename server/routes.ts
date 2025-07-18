@@ -11,6 +11,11 @@ let dataInitialized = false;
 let lastDataCheck = 0;
 const DATA_CHECK_INTERVAL = 5 * 60 * 1000; // Check for new data every 5 minutes
 
+// Prize breakdown caching
+let prizeBreakdownCache: any = null;
+let lastPrizeBreakdownFetch = 0;
+const PRIZE_BREAKDOWN_CACHE_DURATION = 2 * 60 * 1000; // Cache for 2 minutes
+
 // Reset initialization flag to force re-initialization
 const resetDataInitialization = () => {
   dataInitialized = false;
@@ -760,14 +765,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get latest prize breakdown
+  // Get latest prize breakdown with caching
   app.get("/api/prize-breakdown", async (req, res) => {
     try {
-      // Disable caching for real-time data
-      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
+      // Check if we have cached data that's still fresh
+      const now = Date.now();
+      if (prizeBreakdownCache && (now - lastPrizeBreakdownFetch) < PRIZE_BREAKDOWN_CACHE_DURATION) {
+        console.log('Returning cached prize breakdown data');
+        return res.json(prizeBreakdownCache);
+      }
 
+      console.log('Fetching fresh prize breakdown data...');
       const prizeData = await EuroMillionsService.getPrizeBreakdown();
       
       if (!prizeData) {
@@ -776,6 +784,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Please try again later"
         });
       }
+
+      // Cache the fresh data
+      prizeBreakdownCache = prizeData;
+      lastPrizeBreakdownFetch = now;
 
       res.json(prizeData);
     } catch (error) {
