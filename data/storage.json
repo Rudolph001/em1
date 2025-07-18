@@ -2330,6 +2330,13 @@
       "amountZar": 2297700000,
       "exchangeRate": 20.7,
       "updatedAt": "2025-07-18T00:06:09.183Z"
+    },
+    {
+      "id": 72,
+      "amountEur": 111000000,
+      "amountZar": 2297700000,
+      "exchangeRate": 20.7,
+      "updatedAt": "2025-07-18T00:09:58.897Z"
     }
   ]
 }
