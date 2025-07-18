@@ -2199,4 +2199,344 @@ export class PredictionService {
   private static calculateRecentPenalty(prediction: PredictionResult, positions: number[]): number {
     return 0.1;
   }
+
+  /**
+   * Generate improved predictions based on ticket performance analysis
+   */
+  static async generateImprovedPredictions(historicalDraws: any[], performanceAnalysis: any): Promise<PredictionResult[]> {
+    console.log('Generating improved predictions based on performance analysis...');
+    
+    const improvements: PredictionResult[] = [];
+    
+    try {
+      // Generate multiple improved predictions using different enhanced strategies
+      const strategies = [
+        () => this.generateFrequencyFocusedPrediction(historicalDraws, performanceAnalysis),
+        () => this.generatePatternAdaptivePrediction(historicalDraws, performanceAnalysis),
+        () => this.generatePerformanceBasedPrediction(historicalDraws, performanceAnalysis),
+        () => this.generateHybridImprovedPrediction(historicalDraws, performanceAnalysis)
+      ];
+
+      for (const strategy of strategies) {
+        try {
+          const prediction = strategy();
+          if (prediction && this.validatePredictionQuality(prediction, [])) {
+            improvements.push(prediction);
+          }
+        } catch (error) {
+          console.error('Error generating improved prediction:', error);
+        }
+      }
+
+      // If we don't have enough predictions, generate some fallbacks
+      while (improvements.length < 3) {
+        const fallback = await this.generatePrediction(historicalDraws);
+        fallback.modelVersion = fallback.modelVersion + '-improved-fallback';
+        fallback.reasoning = `Improved fallback prediction: ${fallback.reasoning}`;
+        improvements.push(fallback);
+      }
+
+      return improvements.slice(0, 5);
+    } catch (error) {
+      console.error('Error in generateImprovedPredictions:', error);
+      return [await this.generatePrediction(historicalDraws)];
+    }
+  }
+
+  private static generateFrequencyFocusedPrediction(historicalDraws: any[], performanceAnalysis: any): PredictionResult {
+    // Focus more heavily on frequently drawn numbers
+    const numberHistory = historicalDraws.map(draw => draw.mainNumbers).filter(nums => nums && nums.length === 5);
+    const starHistory = historicalDraws.map(draw => draw.luckyStars).filter(stars => stars && stars.length === 2);
+
+    const numberFreq = new Map<number, number>();
+    const starFreq = new Map<number, number>();
+
+    // Count frequencies with extra weight on recent draws
+    numberHistory.forEach((draw, index) => {
+      const weight = Math.exp(-index * 0.03); // Less decay than before
+      draw.forEach((num: number) => {
+        numberFreq.set(num, (numberFreq.get(num) || 0) + weight);
+      });
+    });
+
+    starHistory.forEach((draw, index) => {
+      const weight = Math.exp(-index * 0.03);
+      draw.forEach((star: number) => {
+        starFreq.set(star, (starFreq.get(star) || 0) + weight);
+      });
+    });
+
+    // Select top frequency numbers with some randomization
+    const topNumbers = Array.from(numberFreq.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 12)
+      .map(([num]) => num);
+
+    const topStars = Array.from(starFreq.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([star]) => star);
+
+    const mainNumbers = this.shuffleArray(topNumbers).slice(0, 5).sort((a, b) => a - b);
+    const luckyStars = this.shuffleArray(topStars).slice(0, 2).sort((a, b) => a - b);
+
+    return {
+      mainNumbers,
+      luckyStars,
+      position: CombinationsService.calculatePosition(mainNumbers, luckyStars),
+      confidence: 0.75,
+      method: 'Frequency-Focused Improved',
+      modelVersion: 'v3.0.0-improved-frequency',
+      reasoning: 'Enhanced frequency analysis focusing on consistently drawn numbers based on ticket performance',
+      historicalDataPoints: historicalDraws.length
+    };
+  }
+
+  private static generatePatternAdaptivePrediction(historicalDraws: any[], performanceAnalysis: any): PredictionResult {
+    // Adapt patterns based on what worked/didn't work
+    const recentDraws = historicalDraws.slice(0, 15);
+    const numbers: number[] = [];
+    const stars: number[] = [];
+
+    // Look for successful patterns in recent draws
+    const patternAnalysis = this.analyzeSuccessfulPatterns(recentDraws);
+    
+    // Generate numbers based on successful patterns
+    if (patternAnalysis.consecutivePairs.length > 0) {
+      const bestPair = patternAnalysis.consecutivePairs[0];
+      numbers.push(bestPair, bestPair + 1);
+    }
+
+    // Add numbers from successful ranges
+    const successfulRanges = this.identifySuccessfulRanges(recentDraws);
+    for (const range of successfulRanges) {
+      if (numbers.length < 5) {
+        const rangeNumbers = Array.from({length: range.end - range.start + 1}, (_, i) => range.start + i);
+        const randomFromRange = rangeNumbers[Math.floor(Math.random() * rangeNumbers.length)];
+        if (!numbers.includes(randomFromRange)) {
+          numbers.push(randomFromRange);
+        }
+      }
+    }
+
+    // Fill remaining with smart selection
+    while (numbers.length < 5) {
+      const randomNum = Math.floor(Math.random() * 50) + 1;
+      if (!numbers.includes(randomNum)) {
+        numbers.push(randomNum);
+      }
+    }
+
+    // Smart star selection
+    const starPatterns = this.analyzeStarPatterns(recentDraws);
+    stars.push(...starPatterns.slice(0, 2));
+
+    while (stars.length < 2) {
+      const randomStar = Math.floor(Math.random() * 12) + 1;
+      if (!stars.includes(randomStar)) {
+        stars.push(randomStar);
+      }
+    }
+
+    return {
+      mainNumbers: numbers.sort((a, b) => a - b),
+      luckyStars: stars.sort((a, b) => a - b),
+      position: CombinationsService.calculatePosition(numbers, stars),
+      confidence: 0.72,
+      method: 'Pattern-Adaptive Improved',
+      modelVersion: 'v3.0.0-improved-pattern',
+      reasoning: 'Adaptive pattern recognition based on successful recent draw patterns',
+      historicalDataPoints: historicalDraws.length
+    };
+  }
+
+  private static generatePerformanceBasedPrediction(historicalDraws: any[], performanceAnalysis: any): PredictionResult {
+    // Generate prediction specifically addressing performance issues
+    const numbers: number[] = [];
+    const stars: number[] = [];
+
+    // If average main matches was low, focus on more reliable numbers
+    if (performanceAnalysis.avgMainMatches < 2) {
+      const reliableNumbers = this.getReliableNumbers(historicalDraws);
+      numbers.push(...reliableNumbers.slice(0, 3));
+    }
+
+    // Add balanced selection
+    const balancedNumbers = this.getBalancedNumberSelection(historicalDraws);
+    for (const num of balancedNumbers) {
+      if (numbers.length < 5 && !numbers.includes(num)) {
+        numbers.push(num);
+      }
+    }
+
+    // Fill remaining
+    while (numbers.length < 5) {
+      const randomNum = Math.floor(Math.random() * 50) + 1;
+      if (!numbers.includes(randomNum)) {
+        numbers.push(randomNum);
+      }
+    }
+
+    // Star selection based on performance
+    const reliableStars = this.getReliableStars(historicalDraws);
+    stars.push(...reliableStars.slice(0, 2));
+
+    while (stars.length < 2) {
+      const randomStar = Math.floor(Math.random() * 12) + 1;
+      if (!stars.includes(randomStar)) {
+        stars.push(randomStar);
+      }
+    }
+
+    return {
+      mainNumbers: numbers.sort((a, b) => a - b),
+      luckyStars: stars.sort((a, b) => a - b),
+      position: CombinationsService.calculatePosition(numbers, stars),
+      confidence: 0.78,
+      method: 'Performance-Based Improved',
+      modelVersion: 'v3.0.0-improved-performance',
+      reasoning: 'Prediction optimized based on specific performance analysis and ticket results',
+      historicalDataPoints: historicalDraws.length
+    };
+  }
+
+  private static generateHybridImprovedPrediction(historicalDraws: any[], performanceAnalysis: any): PredictionResult {
+    // Hybrid approach combining multiple improvement strategies
+    const strategies = [
+      this.generateFrequencyFocusedPrediction(historicalDraws, performanceAnalysis),
+      this.generatePatternAdaptivePrediction(historicalDraws, performanceAnalysis),
+      this.generatePerformanceBasedPrediction(historicalDraws, performanceAnalysis)
+    ];
+
+    // Combine strategies using voting
+    const numberVotes = new Map<number, number>();
+    const starVotes = new Map<number, number>();
+
+    strategies.forEach(strategy => {
+      strategy.mainNumbers.forEach(num => {
+        numberVotes.set(num, (numberVotes.get(num) || 0) + 1);
+      });
+      strategy.luckyStars.forEach(star => {
+        starVotes.set(star, (starVotes.get(star) || 0) + 1);
+      });
+    });
+
+    const hybridNumbers = Array.from(numberVotes.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([num]) => num)
+      .sort((a, b) => a - b);
+
+    const hybridStars = Array.from(starVotes.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 2)
+      .map(([star]) => star)
+      .sort((a, b) => a - b);
+
+    return {
+      mainNumbers: hybridNumbers,
+      luckyStars: hybridStars,
+      position: CombinationsService.calculatePosition(hybridNumbers, hybridStars),
+      confidence: 0.82,
+      method: 'Hybrid Improved',
+      modelVersion: 'v3.0.0-improved-hybrid',
+      reasoning: 'Hybrid improved prediction combining frequency, pattern, and performance-based strategies',
+      historicalDataPoints: historicalDraws.length
+    };
+  }
+
+  // Helper methods for improved predictions
+  private static analyzeSuccessfulPatterns(draws: any[]): { consecutivePairs: number[], commonPatterns: any[] } {
+    const consecutivePairs: number[] = [];
+    const commonPatterns: any[] = [];
+
+    draws.forEach(draw => {
+      const sorted = [...draw.mainNumbers].sort((a, b) => a - b);
+      for (let i = 0; i < sorted.length - 1; i++) {
+        if (sorted[i + 1] - sorted[i] === 1) {
+          consecutivePairs.push(sorted[i]);
+        }
+      }
+    });
+
+    return { consecutivePairs: [...new Set(consecutivePairs)], commonPatterns };
+  }
+
+  private static identifySuccessfulRanges(draws: any[]): { start: number, end: number }[] {
+    const ranges = [
+      { start: 1, end: 10 },
+      { start: 11, end: 20 },
+      { start: 21, end: 30 },
+      { start: 31, end: 40 },
+      { start: 41, end: 50 }
+    ];
+
+    return ranges.filter(range => {
+      const rangeSuccess = draws.some(draw => 
+        draw.mainNumbers.some((num: number) => num >= range.start && num <= range.end)
+      );
+      return rangeSuccess;
+    });
+  }
+
+  private static analyzeStarPatterns(draws: any[]): number[] {
+    const starFreq = new Map<number, number>();
+    draws.forEach(draw => {
+      draw.luckyStars.forEach((star: number) => {
+        starFreq.set(star, (starFreq.get(star) || 0) + 1);
+      });
+    });
+
+    return Array.from(starFreq.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4)
+      .map(([star]) => star);
+  }
+
+  private static getReliableNumbers(draws: any[]): number[] {
+    const numberFreq = new Map<number, number>();
+    draws.forEach(draw => {
+      draw.mainNumbers.forEach((num: number) => {
+        numberFreq.set(num, (numberFreq.get(num) || 0) + 1);
+      });
+    });
+
+    return Array.from(numberFreq.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([num]) => num);
+  }
+
+  private static getBalancedNumberSelection(draws: any[]): number[] {
+    // Select numbers from different ranges
+    const ranges = [
+      { start: 1, end: 10 },
+      { start: 11, end: 25 },
+      { start: 26, end: 40 },
+      { start: 41, end: 50 }
+    ];
+
+    const selected: number[] = [];
+    ranges.forEach(range => {
+      const rangeNumbers = Array.from({length: range.end - range.start + 1}, (_, i) => range.start + i);
+      const randomFromRange = rangeNumbers[Math.floor(Math.random() * rangeNumbers.length)];
+      selected.push(randomFromRange);
+    });
+
+    return selected;
+  }
+
+  private static getReliableStars(draws: any[]): number[] {
+    const starFreq = new Map<number, number>();
+    draws.forEach(draw => {
+      draw.luckyStars.forEach((star: number) => {
+        starFreq.set(star, (starFreq.get(star) || 0) + 1);
+      });
+    });
+
+    return Array.from(starFreq.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4)
+      .map(([star]) => star);
+  }
 }

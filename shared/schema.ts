@@ -67,8 +67,36 @@ export const insertPredictionSchema = createInsertSchema(predictions).omit({
   id: true,
 });
 
-export const insertJackpotDataSchema = createInsertSchema(jackpotData).omit({
-  id: true,
+export const insertJackpotDataSchema = z.object({
+  amountEur: z.number().positive(),
+  amountZar: z.number().positive(),
+  exchangeRate: z.number().positive(),
+});
+
+export const insertTicketSchema = z.object({
+  mainNumbers: z.array(z.number().min(1).max(50)).length(5),
+  luckyStars: z.array(z.number().min(1).max(12)).length(2),
+  predictionMethod: z.string(),
+  confidence: z.number().min(0).max(1),
+  drawDate: z.date(),
+  isActive: z.boolean(),
+});
+
+export const insertTicketResultSchema = z.object({
+  ticketId: z.number().positive(),
+  drawResult: z.object({
+    mainNumbers: z.array(z.number().min(1).max(50)).length(5),
+    luckyStars: z.array(z.number().min(1).max(12)).length(2),
+    drawDate: z.string(),
+  }),
+  matches: z.object({
+    mainMatches: z.number().min(0).max(5),
+    starMatches: z.number().min(0).max(2),
+    totalMatches: z.number().min(0).max(7),
+    prizeAmount: z.number().min(0),
+    prizeAmountZar: z.number().min(0),
+    tier: z.string(),
+  }),
 });
 
 export type User = typeof users.$inferSelect;

@@ -800,6 +800,149 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user tickets
+  app.get("/api/tickets", async (req, res) => {
+    try {
+      const tickets = await storage.getTickets();
+      res.json(tickets);
+    } catch (error) {
+      console.error('Error fetching tickets:', error);
+      res.status(500).json({ error: "Failed to fetch tickets" });
+    }
+  });
+
+  // Save new tickets
+  app.post("/api/tickets", async (req, res) => {
+    try {
+      const { tickets } = req.body;
+      
+      if (!tickets || !Array.isArray(tickets)) {
+        return res.status(400).json({ error: "Invalid tickets data" });
+      }
+
+      const savedTickets = [];
+      for (const ticket of tickets) {
+        const savedTicket = await storage.createTicket({
+          mainNumbers: ticket.mainNumbers,
+          luckyStars: ticket.luckyStars,
+          predictionMethod: ticket.predictionMethod,
+          confidence: ticket.confidence,
+          drawDate: new Date(ticket.drawDate),
+          isActive: true
+        });
+        savedTickets.push(savedTicket);
+      }
+
+      res.json({ message: "Tickets saved successfully", tickets: savedTickets });
+    } catch (error) {
+      console.error('Error saving tickets:', error);
+      res.status(500).json({ error: "Failed to save tickets" });
+    }
+  });
+
+  // Get ticket results
+  app.get("/api/ticket-results", async (req, res) => {
+    try {
+      const results = await storage.getTicketResults();
+      res.json(results);
+    } catch (error) {
+      console.error('Error fetching ticket results:', error);
+      res.status(500).json({ error: "Failed to fetch ticket results" });
+    }
+  });
+
+  // Check ticket results and improve predictions
+  app.post("/api/tickets/check-results", async (req, res) => {
+    try {
+      await initializeData();
+      
+      // Get active tickets
+      const activeTickets = await storage.getActiveTickets();
+      
+      // Get latest draws
+      const latestDraws = await storage.getDrawHistory(10);
+      
+      if (latestDraws.length === 0) {
+        return res.json({ message: "No recent draws available" });
+      }
+
+      const results = [];
+      let improvementNeeded = false;
+
+      for (const ticket of activeTickets) {
+        // Find matching draw
+        const matchingDraw = latestDraws.find(draw => 
+          draw.drawDate.toISOString().split('T')[0] === ticket.drawDate.toISOString().split('T')[0] ||
+          draw.drawDate >= ticket.drawDate
+        );
+
+        if (matchingDraw) {
+          // Calculate matches
+          const mainMatches = ticket.mainNumbers.filter(num => 
+            matchingDraw.mainNumbers.includes(num)
+          ).length;
+          
+          const starMatches = ticket.luckyStars.filter(star => 
+            matchingDraw.luckyStars.includes(star)
+          ).length;
+
+          const totalMatches = mainMatches + starMatches;
+          
+          // Calculate prize (simplified European prize structure)
+          const { prizeAmount, prizeAmountZar, tier } = calculatePrizeAmount(mainMatches, starMatches);
+
+          const result = {
+            ticketId: ticket.id,
+            drawResult: {
+              mainNumbers: matchingDraw.mainNumbers,
+              luckyStars: matchingDraw.luckyStars,
+              drawDate: matchingDraw.drawDate.toISOString()
+            },
+            matches: {
+              mainMatches,
+              starMatches,
+              totalMatches,
+              prizeAmount,
+              prizeAmountZar,
+              tier
+            }
+          };
+
+          // Save result
+          await storage.createTicketResult(result);
+          
+          // Update ticket as completed
+          await storage.updateTicket(ticket.id, {
+            isActive: false,
+            matches: result.matches
+          });
+
+          results.push(result);
+
+          // Check if improvement needed (less than 4 matches)
+          if (totalMatches < 4) {
+            improvementNeeded = true;
+          }
+        }
+      }
+
+      // Improve predictions if needed
+      if (improvementNeeded) {
+        console.log('Improving predictions based on poor performance...');
+        await improvePredictions(results);
+      }
+
+      res.json({ 
+        message: "Results checked successfully", 
+        results,
+        improvementTriggered: improvementNeeded
+      });
+    } catch (error) {
+      console.error('Error checking ticket results:', error);
+      res.status(500).json({ error: "Failed to check ticket results" });
+    }
+  });
+
   // Force data initialization for fresh local setups
   app.post("/api/initialize", async (req, res) => {
     try {
@@ -994,4 +1137,146 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }, 10 * 60 * 1000); // Check every 10 minutes
 
   return httpServer;
+}
+
+// Helper function to calculate prize amounts
+function calculatePrizeAmount(mainMatches: number, starMatches: number): {
+  prizeAmount: number;
+  prizeAmountZar: number;
+  tier: string;
+} {
+  let prizeAmount = 0;
+  let tier = "";
+
+  // Simplified EuroMillions prize structure
+  if (mainMatches === 5 && starMatches === 2) {
+    prizeAmount = 50000000; // €50M average jackpot
+    tier = "Jackpot";
+  } else if (mainMatches === 5 && starMatches === 1) {
+    prizeAmount = 200000;
+    tier = "Tier 2";
+  } else if (mainMatches === 5 && starMatches === 0) {
+    prizeAmount = 50000;
+    tier = "Tier 3";
+  } else if (mainMatches === 4 && starMatches === 2) {
+    prizeAmount = 5000;
+    tier = "Tier 4";
+  } else if (mainMatches === 4 && starMatches === 1) {
+    prizeAmount = 500;
+    tier = "Tier 5";
+  } else if (mainMatches === 3 && starMatches === 2) {
+    prizeAmount = 250;
+    tier = "Tier 6";
+  } else if (mainMatches === 4 && starMatches === 0) {
+    prizeAmount = 100;
+    tier = "Tier 7";
+  } else if (mainMatches === 2 && starMatches === 2) {
+    prizeAmount = 50;
+    tier = "Tier 8";
+  } else if (mainMatches === 3 && starMatches === 1) {
+    prizeAmount = 25;
+    tier = "Tier 9";
+  } else if (mainMatches === 3 && starMatches === 0) {
+    prizeAmount = 15;
+    tier = "Tier 10";
+  } else if (mainMatches === 1 && starMatches === 2) {
+    prizeAmount = 12;
+    tier = "Tier 11";
+  } else if (mainMatches === 2 && starMatches === 1) {
+    prizeAmount = 8;
+    tier = "Tier 12";
+  } else if (mainMatches === 2 && starMatches === 0) {
+    prizeAmount = 4;
+    tier = "Tier 13";
+  } else {
+    prizeAmount = 0;
+    tier = "No Prize";
+  }
+
+  return {
+    prizeAmount,
+    prizeAmountZar: prizeAmount * 20.7, // Convert to ZAR
+    tier
+  };
+}
+
+// Helper function to improve predictions based on ticket results
+async function improvePredictions(results: any[]): Promise<void> {
+  try {
+    console.log('Analyzing ticket performance for prediction improvement...');
+    
+    // Get historical data for analysis
+    const history = await storage.getDrawHistory(50);
+    
+    // Analyze what went wrong with predictions
+    const performanceAnalysis = analyzeTicketPerformance(results, history);
+    
+    // Generate improved predictions
+    const improvedPredictions = await PredictionService.generateImprovedPredictions(
+      history,
+      performanceAnalysis
+    );
+    
+    // Save improved predictions
+    for (const prediction of improvedPredictions) {
+      await storage.createPrediction({
+        drawDate: EuroMillionsService.getNextDrawDate(),
+        mainNumbers: prediction.mainNumbers,
+        luckyStars: prediction.luckyStars,
+        position: prediction.position,
+        confidence: prediction.confidence,
+        modelVersion: prediction.modelVersion + '-improved',
+        reasoning: `Improved prediction based on ticket performance analysis: ${prediction.reasoning}`,
+        historicalDataPoints: prediction.historicalDataPoints
+      });
+    }
+    
+    console.log('Predictions improved and saved based on performance analysis');
+  } catch (error) {
+    console.error('Error improving predictions:', error);
+  }
+}
+
+function analyzeTicketPerformance(results: any[], history: any[]): any {
+  const analysis = {
+    avgMainMatches: 0,
+    avgStarMatches: 0,
+    poorPerformingNumbers: [] as number[],
+    poorPerformingStars: [] as number[],
+    methodPerformance: new Map<string, { matches: number, count: number }>(),
+    recommendations: [] as string[]
+  };
+
+  // Calculate averages
+  let totalMainMatches = 0;
+  let totalStarMatches = 0;
+  
+  // Track number performance
+  const numberMisses = new Map<number, number>();
+  const starMisses = new Map<number, number>();
+  
+  for (const result of results) {
+    totalMainMatches += result.matches.mainMatches;
+    totalStarMatches += result.matches.starMatches;
+    
+    // Track misses for each number/star
+    const ticket = result.ticketId; // This would need to be expanded to get actual ticket data
+    // For now, we'll use a simplified approach
+  }
+  
+  analysis.avgMainMatches = totalMainMatches / results.length;
+  analysis.avgStarMatches = totalStarMatches / results.length;
+  
+  // Add recommendations based on performance
+  if (analysis.avgMainMatches < 2) {
+    analysis.recommendations.push("Focus more on frequently drawn numbers");
+    analysis.recommendations.push("Reduce reliance on cold numbers");
+  }
+  
+  if (analysis.avgStarMatches < 0.5) {
+    analysis.recommendations.push("Improve star selection strategy");
+    analysis.recommendations.push("Consider star frequency patterns");
+  }
+  
+  return analysis;
 }

@@ -15,6 +15,8 @@ interface JsonData {
   drawHistory: DrawHistory[];
   predictions: Prediction[];
   jackpotData: JackpotData[];
+  tickets?: any[]; // Add this line
+  ticketResults?: any[]; // Add this line
 }
 
 export interface IStorage {
@@ -51,9 +53,16 @@ export interface IStorage {
   getStats(): Promise<{
     totalCombinations: number;
     drawnCombinations: number;
-    neverDrawnCombinations: number;
     predictionAccuracy: number;
   }>;
+
+    // Ticket management methods
+    createTicket(ticket: any): Promise<any>;
+    getTickets(): Promise<any[]>;
+    getActiveTickets(): Promise<any[]>;
+    updateTicket(ticketId: number, updates: any): Promise<void>;
+    createTicketResult(result: any): Promise<any>;
+    getTicketResults(): Promise<any[]>;
 }
 
 export class JsonStorage implements IStorage {
@@ -68,7 +77,9 @@ export class JsonStorage implements IStorage {
         combinations: [],
         drawHistory: [],
         predictions: [],
-        jackpotData: []
+        jackpotData: [],
+        tickets: [],
+        ticketResults: []
       };
       this.saveData(emptyData);
       return emptyData;
@@ -77,22 +88,36 @@ export class JsonStorage implements IStorage {
     try {
       const rawData = readFileSync(this.dataFile, 'utf-8');
       const data = JSON.parse(rawData);
-      
+
       // Convert date strings back to Date objects
       data.drawHistory = data.drawHistory.map((draw: any) => ({
         ...draw,
         drawDate: new Date(draw.drawDate)
       }));
-      
+
       data.predictions = data.predictions.map((pred: any) => ({
         ...pred,
         createdAt: new Date(pred.createdAt)
       }));
-      
+
       data.jackpotData = data.jackpotData.map((jackpot: any) => ({
         ...jackpot,
         updatedAt: new Date(jackpot.updatedAt)
       }));
+
+        if (data.tickets) {
+            data.tickets = data.tickets.map((ticket: any) => ({
+                ...ticket,
+                createdAt: ticket.createdAt ? new Date(ticket.createdAt) : null,
+            }));
+        }
+
+        if (data.ticketResults) {
+            data.ticketResults = data.ticketResults.map((result: any) => ({
+                ...result,
+                createdAt: result.createdAt ? new Date(result.createdAt) : null,
+            }));
+        }
 
       // Update next IDs
       if (data.users.length > 0) {
@@ -110,7 +135,9 @@ export class JsonStorage implements IStorage {
         combinations: [],
         drawHistory: [],
         predictions: [],
-        jackpotData: []
+        jackpotData: [],
+        tickets: [],
+        ticketResults: []
       };
       return emptyData;
     }
@@ -172,7 +199,7 @@ export class JsonStorage implements IStorage {
     const data = this.loadData();
     const index = data.combinations.findIndex(combo => combo.position === position);
     if (index === -1) return undefined;
-    
+
     data.combinations[index] = { ...data.combinations[index], ...updates };
     this.saveData(data);
     return data.combinations[index];
@@ -205,13 +232,13 @@ export class JsonStorage implements IStorage {
 
   async createDrawHistory(draw: InsertDrawHistory): Promise<DrawHistory> {
     const data = this.loadData();
-    
+
     // Check if draw already exists for this date
     const existingDraw = await this.getDrawByDate(draw.drawDate);
     if (existingDraw) {
       return existingDraw;
     }
-    
+
     const newDraw: DrawHistory = {
       id: data.drawHistory.length + 1,
       ...draw
@@ -249,7 +276,7 @@ export class JsonStorage implements IStorage {
     const data = this.loadData();
     const index = data.predictions.findIndex(pred => pred.id === id);
     if (index === -1) return undefined;
-    
+
     data.predictions[index] = { ...data.predictions[index], ...updates };
     this.saveData(data);
     return data.predictions[index];
@@ -282,14 +309,13 @@ export class JsonStorage implements IStorage {
   async getStats(): Promise<{
     totalCombinations: number;
     drawnCombinations: number;
-    neverDrawnCombinations: number;
     predictionAccuracy: number;
   }> {
     const data = this.loadData();
     const totalCombinations = 139838160; // Total possible EuroMillions combinations
     const drawnCombinations = data.combinations.filter(combo => combo.hasBeenDrawn).length;
     const neverDrawnCombinations = totalCombinations - drawnCombinations;
-    
+
     // Calculate prediction accuracy based on predictions that have been verified
     const verifiedPredictions = data.predictions.filter(pred => pred.isVerified);
     const correctPredictions = verifiedPredictions.filter(pred => pred.isCorrect);
@@ -303,6 +329,61 @@ export class JsonStorage implements IStorage {
       neverDrawnCombinations,
       predictionAccuracy
     };
+  }
+
+  // Ticket management methods
+  async createTicket(ticket: any): Promise<any> {
+    const data = this.loadData();
+    const newTicket = {
+      id: (data.tickets?.length || 0) + 1,
+      ...ticket,
+      createdAt: new Date()
+    };
+
+    if (!data.tickets) data.tickets = [];
+    data.tickets.push(newTicket);
+    this.saveData(data);
+    return newTicket;
+  }
+
+  async getTickets(): Promise<any[]> {
+    const data = this.loadData();
+    return data.tickets || [];
+  }
+
+  async getActiveTickets(): Promise<any[]> {
+    const data = this.loadData();
+    return (data.tickets || []).filter((ticket: any) => ticket.isActive);
+  }
+
+  async updateTicket(ticketId: number, updates: any): Promise<void> {
+    const data = this.loadData();
+    if (!data.tickets) data.tickets = [];
+
+    const ticketIndex = data.tickets.findIndex((ticket: any) => ticket.id === ticketId);
+    if (ticketIndex !== -1) {
+      data.tickets[ticketIndex] = { ...data.tickets[ticketIndex], ...updates };
+      this.saveData(data);
+    }
+  }
+
+  async createTicketResult(result: any): Promise<any> {
+    const data = this.loadData();
+    const newResult = {
+      id: (data.ticketResults?.length || 0) + 1,
+      ...result,
+      createdAt: new Date()
+    };
+
+    if (!data.ticketResults) data.ticketResults = [];
+    data.ticketResults.push(newResult);
+    this.saveData(data);
+    return newResult;
+  }
+
+  async getTicketResults(): Promise<any[]> {
+    const data = this.loadData();
+    return data.ticketResults || [];
   }
 }
 
