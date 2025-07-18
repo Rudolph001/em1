@@ -16,10 +16,17 @@ This is a full-stack EuroMillions lottery analysis and prediction web applicatio
 - ✅ Enhanced prediction reasoning with detailed explanations of methodology
 - ✅ Model version upgraded to v3.0.0-advanced with automatic refresh capability
 
+**July 17, 2025 - Local Setup Updated for JSON Storage**
+- ✅ Updated `run-local.bat` and `run-local.py` for JSON storage mode
+- ✅ Removed database requirements from local setup scripts
+- ✅ Added automatic data folder creation and .env file generation
+- ✅ Created simplified local setup documentation (`README-LOCAL-JSON.md`)
+- ✅ Simplified local deployment - no database setup needed
+
 **July 17, 2025 - Real-time Jackpot Data Fixed**
-- ✅ Fixed jackpot data to show real current amount (€164.7M instead of hardcoded €97M)
-- ✅ Implemented multi-source jackpot fetching with web scraping fallbacks
-- ✅ Added proper error handling and validation for jackpot amounts  
+- ✅ Fixed jackpot data to show correct €111M from EuroMillones.com (user's trusted source)
+- ✅ Updated exchange rate to accurate 20.74 ZAR per EUR
+- ✅ Implemented proper parsing from EuroMillones.com HTML
 - ✅ Enhanced automatic background updates to fetch real-time data every 2 minutes
 - ✅ Verified all data sources are working with accurate current information
 

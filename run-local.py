@@ -54,8 +54,8 @@ def run_command(command, description, check_error=True):
         return False
 
 def main():
-    colored_print("EuroMillions Analysis App - Local Setup", 'yellow')
-    colored_print("=" * 50, 'yellow')
+    colored_print("EuroMillions Analysis App - Local Setup (JSON Storage)", 'yellow')
+    colored_print("=" * 58, 'yellow')
     
     # Check if Node.js is installed
     colored_print("\nChecking Node.js installation...", 'blue')
@@ -81,42 +81,37 @@ def main():
         colored_print("Make sure you're in the correct directory", 'red')
         sys.exit(1)
     
-    # Check if .env exists
+    # Check if .env exists (now optional with JSON storage)
     if not Path('.env').exists():
-        colored_print("WARNING: .env file not found", 'yellow')
-        colored_print("Please create .env file with your DATABASE_URL", 'yellow')
-        colored_print("Example:", 'yellow')
-        colored_print("DATABASE_URL=postgresql://username:password@localhost:5432/euromillions", 'yellow')
-        colored_print("NODE_ENV=development", 'yellow')
-        colored_print("", 'yellow')
-        colored_print("For cloud database (recommended), sign up at https://neon.tech", 'yellow')
-        
-        response = input("\nPress Enter to continue or Ctrl+C to exit...")
-        if response.strip().lower() in ['exit', 'quit', 'q']:
-            sys.exit(1)
+        colored_print("Creating .env file for JSON storage mode...", 'blue')
+        with open('.env', 'w') as f:
+            f.write("NODE_ENV=development\n")
+            f.write("STORAGE_TYPE=json\n")
+        colored_print("✓ Using JSON file storage mode (no database required)", 'green')
     
     # Install dependencies
     if not run_command('npm install', 'Installing dependencies'):
         colored_print("ERROR: Failed to install dependencies", 'red')
         sys.exit(1)
     
-    # Setup database schema
-    if not run_command('npm run db:push', 'Setting up database schema'):
-        colored_print("ERROR: Failed to setup database schema", 'red')
-        colored_print("Check your DATABASE_URL in .env file", 'red')
-        sys.exit(1)
+    # Create data directory for JSON storage
+    colored_print("\nSetting up JSON storage...", 'blue')
+    data_dir = Path('data')
+    data_dir.mkdir(exist_ok=True)
+    colored_print("✓ JSON storage directory created", 'green')
+    colored_print("✓ No database setup required - using JSON files", 'green')
     
     # Information about API tests
     colored_print("\nAPI tests will be available after the server starts", 'blue')
     colored_print("You can run 'python test-local.py' in another terminal to test the API", 'blue')
     colored_print("Or run 'python diagnose-local.py' for detailed diagnostics", 'blue')
     
-    colored_print("\n" + "=" * 50, 'yellow')
+    colored_print("\n" + "=" * 58, 'yellow')
     colored_print("Setup complete! Starting the application...", 'green')
     colored_print("", 'yellow')
     colored_print("Application will be available at: http://localhost:5000", 'green')
     colored_print("Press Ctrl+C to stop the server", 'yellow')
-    colored_print("=" * 50, 'yellow')
+    colored_print("=" * 58, 'yellow')
     
     # Set environment variable and start the application
     env = os.environ.copy()

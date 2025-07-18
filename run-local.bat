@@ -1,6 +1,6 @@
 @echo off
-echo EuroMillions Analysis App - Local Setup
-echo ==========================================
+echo EuroMillions Analysis App - Local Setup ^(JSON Storage^)
+echo ========================================================
 
 :: Check if Node.js is installed
 node --version >nul 2>&1
@@ -19,17 +19,13 @@ if not exist package.json (
     exit /b 1
 )
 
-:: Check if .env exists
+:: Check if .env exists (now optional with JSON storage)
 if not exist .env (
-    echo WARNING: .env file not found
-    echo Please create .env file with your DATABASE_URL
-    echo Example:
-    echo DATABASE_URL=postgresql://username:password@localhost:5432/euromillions
-    echo NODE_ENV=development
+    echo Creating .env file for JSON storage mode...
+    echo NODE_ENV=development > .env
+    echo STORAGE_TYPE=json >> .env
     echo.
-    echo For cloud database ^(recommended^), sign up at https://neon.tech
-    pause
-    exit /b 1
+    echo Using JSON file storage mode ^(no database required^)
 )
 
 :: Install dependencies
@@ -41,15 +37,11 @@ if errorlevel 1 (
     exit /b 1
 )
 
-:: Setup database schema
-echo Setting up database schema...
-call npm run db:push
-if errorlevel 1 (
-    echo ERROR: Failed to setup database schema
-    echo Check your DATABASE_URL in .env file
-    pause
-    exit /b 1
-)
+:: Create data directory for JSON storage
+echo Setting up JSON storage...
+if not exist "data" mkdir data
+echo JSON storage directory created
+echo No database setup required - using JSON files
 
 :: Note: API tests will run after server starts
 echo API tests will be available after the server starts
