@@ -1528,4 +1528,58 @@ export class PredictionService {
       type: "Geometric sequence"
     };
   }
+
+  /**
+   * Generate multiple alternative predictions using different methods
+   */
+  static async generateAlternativePredictions(positions: number[]): Promise<PredictionResult[]> {
+    const alternatives: PredictionResult[] = [];
+
+    try {
+      // Use different prediction methods for variety
+      const methods = [
+        () => this.gapAnalysisPrediction(positions),
+        () => this.frequencyAnalysisPrediction(positions),
+        () => this.trendAnalysisPrediction(positions),
+        () => this.cyclicalAnalysisPrediction(positions),
+        () => this.deviationAnalysisPrediction(positions),
+        () => this.generateHotNumberPrediction(positions),
+        () => this.generateColdNumberPrediction(positions),
+        () => this.generateMathematicalSequencePrediction(positions),
+        () => this.generateRandomPrediction()
+      ];
+
+      // Generate predictions using different methods
+      for (let i = 0; i < Math.min(6, methods.length); i++) {
+        try {
+          const prediction = methods[i]();
+          if (prediction && prediction.mainNumbers && prediction.luckyStars) {
+            alternatives.push(prediction);
+          }
+        } catch (error) {
+          console.error(`Error generating alternative prediction ${i}:`, error);
+        }
+      }
+
+      // If we don't have enough alternatives, fill with random predictions
+      while (alternatives.length < 3) {
+        try {
+          const randomPrediction = this.generateRandomPrediction();
+          alternatives.push(randomPrediction);
+        } catch (error) {
+          console.error('Error generating random prediction:', error);
+          break;
+        }
+      }
+
+      // Sort by confidence (highest first)
+      alternatives.sort((a, b) => b.confidence - a.confidence);
+
+      return alternatives.slice(0, 6); // Return top 6 alternatives
+    } catch (error) {
+      console.error('Error in generateAlternativePredictions:', error);
+      // Return at least one random prediction as fallback
+      return [this.generateRandomPrediction()];
+    }
+  }
 }
