@@ -854,8 +854,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (currentJackpot && exchangeRate) {
         await storage.createJackpotData({
           amountEur: currentJackpot,
-          amountZar: currentprevious_generation>
-          amountEur: currentJackpot,
           amountZar: currentJackpot * exchangeRate.rate,
           exchangeRate: exchangeRate.rate
         });
